@@ -1,0 +1,3 @@
+Bad ID list at: [0] v1.2.0, [1] v1.1.0: the semantic version IDs are out of order: the former has a higher minor version number than the latter
+Bad ID list at: [1] v1.1.0, [2] v1.1.0: duplicate entries
+Bad ID list at: [2] v1.1.0, [3] v1.4.0: the semantic version IDs have gaps: the minor version number has grown but by more than 1
