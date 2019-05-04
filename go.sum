@@ -1,7 +1,11 @@
 github.com/nickwells/check.mod v1.3.1 h1:w8eAdNTlkjT9ojXsgo537CVuUAHwblMSMZVAAlEfFe8=
 github.com/nickwells/check.mod v1.3.1/go.mod h1:2utZ06Ey8/ZUGl9J7NuSo8P6Pevo83N453Bj3msrZx0=
+github.com/nickwells/check.mod v1.4.0 h1:+CZ9NiirJxdKJfpbCpdiPm4X8AOPoGQq1v4yBFNSyo8=
+github.com/nickwells/check.mod v1.4.0/go.mod h1:2utZ06Ey8/ZUGl9J7NuSo8P6Pevo83N453Bj3msrZx0=
 github.com/nickwells/checksetter.mod v1.2.3 h1:fhI0G+oU5dSUAMxHArBZkrI+0b44opjRzB02u1WxSK4=
 github.com/nickwells/checksetter.mod v1.2.3/go.mod h1:pIiCEoIzzs0oLGjq247yefMwvBlMMKlpGWMkaBtVpXw=
+github.com/nickwells/checksetter.mod v1.3.0 h1:J9AtWVeYsBr9Z54kjTNQdID9gHoHEHefSayUSrzfJ1I=
+github.com/nickwells/checksetter.mod v1.3.0/go.mod h1:RNo/K0FcDiNoFmGLgHPNwPoR9eFDvzjevEqrhESmASU=
 github.com/nickwells/filecheck.mod v1.0.5 h1:DQPMS5VmSkwa21vyreo38f9XH9xIOMUMhH3xFyuZccs=
 github.com/nickwells/filecheck.mod v1.0.5/go.mod h1:CpfZ+yPhZnd/ThlNlYvhFBNbPK4sZ0TkL0a5EmJnYVs=
 github.com/nickwells/fileparse.mod v1.1.5 h1:iXzFk6CpMEOddsWng6koZfn/Dvqt4K+4D1NFrhXSkNM=
