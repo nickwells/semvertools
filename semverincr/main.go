@@ -9,15 +9,29 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/nickwells/param.mod/v2/param"
-	"github.com/nickwells/param.mod/v2/param/paramset"
-	"github.com/nickwells/param.mod/v2/param/psetter"
+	"github.com/nickwells/param.mod/v3/param"
+	"github.com/nickwells/param.mod/v3/param/paction"
+	"github.com/nickwells/param.mod/v3/param/paramset"
+	"github.com/nickwells/param.mod/v3/param/psetter"
 	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/semverparams.mod/v2/semverparams"
+	"github.com/nickwells/semverparams.mod/v3/semverparams"
 )
 
-var clearIDs = "none"
-var incrPart = "patch"
+const (
+	incrMajor = "major"
+	incrMinor = "minor"
+	incrPatch = "patch"
+	incrPRID  = "prid"
+	incrNone  = "none"
+
+	clearAll   = "all"
+	clearNone  = "none"
+	clearPRID  = "prid"
+	clearBuild = "build"
+)
+
+var clearIDs = clearNone
+var incrPart = incrPatch
 
 // Created: Wed Dec 26 11:19:14 2018
 
@@ -79,7 +93,7 @@ func incr(sv *semver.SV, choice string) error {
 	case "patch":
 		sv.IncrPatch()
 	case "prid":
-		newPRID, err := incrPRID(sv.PreRelIDs[len(sv.PreRelIDs)-1])
+		newPRID, err := incrPreRelIDs(sv.PreRelIDs[len(sv.PreRelIDs)-1])
 		if err == nil {
 			sv.PreRelIDs = append(sv.PreRelIDs[0:len(sv.PreRelIDs)-1], newPRID)
 		}
@@ -90,13 +104,13 @@ func incr(sv *semver.SV, choice string) error {
 	return nil
 }
 
-// incrPRID will find the numeric part of the pre-release ID and increment
-// it, replacing it in the string in the same place as it was found. If it is
-// a wholly numeric string then it will be taken as a number and incremented
-// as normal, if it is embedded in a string just that part will be
-// incremented. For instance '123' will be changed to '124' but 'RC012' will
-// be changed to 'RC013'.
-func incrPRID(prid string) (string, error) {
+// incrPreRelIDs will find the numeric part of the pre-release ID and
+// increment it, replacing it in the string in the same place as it was
+// found. If it is a wholly numeric string then it will be taken as a number
+// and incremented as normal, if it is embedded in a string just that part
+// will be incremented. For instance '123' will be changed to '124' but
+// 'RC012' will be changed to 'RC013'.
+func incrPreRelIDs(prid string) (string, error) {
 	findNumPartRE := regexp.MustCompile("([^0-9]*)([0-9]+)(.*)")
 	parts := findNumPartRE.FindStringSubmatch(prid)
 
@@ -181,24 +195,25 @@ func setIDs(sv *semver.SV, choice string, prIDs, bIDs []string) error {
 func addParams(ps *param.PSet) error {
 	ps.Add("part", psetter.Enum{
 		Value: &incrPart,
-		AllowedVals: psetter.AValMap{
-			"none": "don't increment any part",
-			"major": "increment the major version." +
-				" This will set the minor and patch versions to 0",
-			"minor": "increment the minor version." +
-				" This will set the patch version to 0" +
-				" but leave the major version unchanged",
-			"patch": "increment just the patch version",
-			"prid": "increment the numeric part of the PRID." +
-				" Only the last part of the pre-release ID string" +
-				" will be incremented" +
-				" and it must contain a sequence of digits." +
-				" So, for instance 'RC009XX' changes to 'RC010XX'," +
-				" '9' changes to '10' and" +
-				" 'rc.1' changes to 'rc.2'" +
-				" but 'rc.1.XX' will report an error since" +
-				" the last part of the pre-release ID (XX) is not numeric",
-		}},
+		AVM: param.AVM{
+			AllowedVals: param.AValMap{
+				incrNone: "don't increment any part",
+				incrMajor: "increment the major version." +
+					" This will set the minor and patch versions to 0",
+				incrMinor: "increment the minor version." +
+					" This will set the patch version to 0" +
+					" but leave the major version unchanged",
+				incrPatch: "increment just the patch version",
+				incrPRID: "increment the numeric part of the PRID." +
+					" Only the last part of the pre-release ID string" +
+					" will be incremented" +
+					" and it must contain a sequence of digits." +
+					" So, for instance 'RC009XX' changes to 'RC010XX'," +
+					" '9' changes to '10' and" +
+					" 'rc.1' changes to 'rc.2'" +
+					" but 'rc.1.XX' will report an error since" +
+					" the last part of the pre-release ID (XX) is not numeric",
+			}}},
 		"which part of the semantic version number should be incremented."+
 			" Any of these will also clear any pre-release IDs"+
 			" but will leave any build IDs unchanged."+
@@ -206,14 +221,40 @@ func addParams(ps *param.PSet) error {
 			" for the resultant semantic version",
 		param.AltName("version-part"))
 
+	ps.Add("major", psetter.Nil{},
+		"update the major part of the semantic version number",
+		param.AltName("maj"),
+		param.AltName("M"),
+		param.PostAction(paction.SetString(&incrPart, incrMajor)),
+	)
+
+	ps.Add("minor", psetter.Nil{},
+		"update the minor part of the semantic version number",
+		param.AltName("min"),
+		param.AltName("m"),
+		param.PostAction(paction.SetString(&incrPart, incrMinor)),
+	)
+
+	ps.Add("patch", psetter.Nil{},
+		"update the patch part of the semantic version number",
+		param.AltName("p"),
+		param.PostAction(paction.SetString(&incrPart, incrPatch)),
+	)
+
+	ps.Add("incr-prid", psetter.Nil{},
+		"update the prid part of the semantic version number",
+		param.PostAction(paction.SetString(&incrPart, incrPRID)),
+	)
+
 	ps.Add("clear-ids", psetter.Enum{
 		Value: &clearIDs,
-		AllowedVals: psetter.AValMap{
-			"none":    "don't clear any part",
-			"all":     "remove any pre-release or build identifiers",
-			"pre-rel": "remove any pre-release identifiers",
-			"build":   "remove any build identifiers",
-		}},
+		AVM: param.AVM{
+			AllowedVals: param.AValMap{
+				clearNone:  "don't clear any part",
+				clearAll:   "remove any pre-release or build identifiers",
+				clearPRID:  "remove any pre-release identifiers",
+				clearBuild: "remove any build identifiers",
+			}}},
 		"which identifiers should be cleared",
 		param.AltName("clear"))
 

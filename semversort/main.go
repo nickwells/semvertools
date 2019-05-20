@@ -9,9 +9,9 @@ import (
 	"os"
 	"sort"
 
-	"github.com/nickwells/param.mod/v2/param"
-	"github.com/nickwells/param.mod/v2/param/paramset"
-	"github.com/nickwells/param.mod/v2/param/psetter"
+	"github.com/nickwells/param.mod/v3/param"
+	"github.com/nickwells/param.mod/v3/param/paramset"
+	"github.com/nickwells/param.mod/v3/param/psetter"
 	"github.com/nickwells/semver.mod/semver"
 )
 

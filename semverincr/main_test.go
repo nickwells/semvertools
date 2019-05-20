@@ -49,7 +49,7 @@ func TestIncrPRID(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		s, err := incrPRID(tc.prid)
+		s, err := incrPreRelIDs(tc.prid)
 		if s != tc.pridExpected {
 			t.Log(tc.IDStr())
 			t.Log("\t: expected: '" + tc.pridExpected + "'")
