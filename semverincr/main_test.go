@@ -44,12 +44,12 @@ func TestIncrPRID(t *testing.T) {
 			prid:         "RC-RC",
 			pridExpected: "RC-RC",
 			ExpErr: testhelper.MkExpErr(
-				"The pre-release ID ('RC-RC') has no numerical part"),
+				`The string ("RC-RC") has no numerical part`),
 		},
 	}
 
 	for _, tc := range testCases {
-		s, err := incrPreRelIDs(tc.prid)
+		s, err := incrNumInStr(tc.prid)
 		if s != tc.pridExpected {
 			t.Log(tc.IDStr())
 			t.Log("\t: expected: '" + tc.pridExpected + "'")
@@ -68,52 +68,52 @@ func TestSetIDs(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
 		testhelper.ExpErr
-		idPart     string
+		idPart     clearString
 		prIDs      []string
 		bIDs       []string
 		svExpected *semver.SV
 	}{
 		{
 			ID:         testhelper.MkID("all - nothing set"),
-			idPart:     "all",
+			idPart:     clearAll,
 			svExpected: &semver.SV{1, 2, 3, nil, nil}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("pre-rel - nothing set"),
-			idPart:     "pre-rel",
+			idPart:     clearPRID,
 			svExpected: &semver.SV{1, 2, 3, nil, bIDsInit}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("build - nothing set"),
-			idPart:     "build",
+			idPart:     clearBuild,
 			svExpected: &semver.SV{1, 2, 3, prIDsInit, nil}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("none - nothing set"),
-			idPart:     "none",
+			idPart:     clearNone,
 			svExpected: &semver.SV{1, 2, 3, prIDsInit, bIDsInit}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("none - prIDs set"),
-			idPart:     "none",
+			idPart:     clearNone,
 			svExpected: &semver.SV{1, 2, 3, prIDsNew, bIDsInit}, // nolint: vet
 			prIDs:      prIDsNew,
 		},
 		{
 			ID:         testhelper.MkID("none - bIDs set"),
-			idPart:     "none",
+			idPart:     clearNone,
 			svExpected: &semver.SV{1, 2, 3, prIDsInit, bIDsNew}, // nolint: vet
 			bIDs:       bIDsNew,
 		},
 		{
 			ID:         testhelper.MkID("all - prIDs set"),
-			idPart:     "all",
+			idPart:     clearAll,
 			svExpected: &semver.SV{1, 2, 3, prIDsNew, nil}, // nolint: vet
 			prIDs:      prIDsNew,
 		},
 		{
 			ID:         testhelper.MkID("all - bIDs set"),
-			idPart:     "all",
+			idPart:     clearAll,
 			svExpected: &semver.SV{1, 2, 3, nil, bIDsNew}, // nolint: vet
 			bIDs:       bIDsNew,
 		},
@@ -148,32 +148,32 @@ func TestIncr(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
 		testhelper.ExpErr
-		incrPart   string
+		incrPart   incrString
 		svExpected *semver.SV
 	}{
 		{
 			ID:         testhelper.MkID("major"),
-			incrPart:   "major",
+			incrPart:   incrMajor,
 			svExpected: &semver.SV{2, 0, 0, nil, bIDs}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("minor"),
-			incrPart:   "minor",
+			incrPart:   incrMinor,
 			svExpected: &semver.SV{1, 3, 0, nil, bIDs}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("patch"),
-			incrPart:   "patch",
+			incrPart:   incrPatch,
 			svExpected: &semver.SV{1, 2, 4, nil, bIDs}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("prid"),
-			incrPart:   "prid",
+			incrPart:   incrPRID,
 			svExpected: &semver.SV{1, 2, 3, []string{"rc002"}, bIDs}, // nolint: vet
 		},
 		{
 			ID:         testhelper.MkID("bad"),
-			incrPart:   "bad",
+			incrPart:   incrString("bad"),
 			svExpected: &semver.SV{1, 2, 3, prIDs, bIDs}, // nolint: vet
 			ExpErr:     testhelper.MkExpErr("Unknown increment choice: 'bad'"),
 		},

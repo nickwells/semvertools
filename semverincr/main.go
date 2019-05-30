@@ -1,4 +1,4 @@
-// semver
+// semverincr
 package main
 
 import (
@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/nickwells/check.mod/check"
+	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v3/param"
 	"github.com/nickwells/param.mod/v3/param/paction"
 	"github.com/nickwells/param.mod/v3/param/paramset"
@@ -17,36 +19,48 @@ import (
 	"github.com/nickwells/semverparams.mod/v3/semverparams"
 )
 
-const (
-	incrMajor = "major"
-	incrMinor = "minor"
-	incrPatch = "patch"
-	incrPRID  = "prid"
-	incrNone  = "none"
+type incrString string
+type clearString string
 
-	clearAll   = "all"
-	clearNone  = "none"
-	clearPRID  = "prid"
-	clearBuild = "build"
+const (
+	incrMajor = incrString("major")
+	incrMinor = incrString("minor")
+	incrPatch = incrString("patch")
+	incrPRID  = incrString("prid")
+	incrLeast = incrString("least")
+	incrNone  = incrString("none")
+
+	clearAll   = clearString("all")
+	clearNone  = clearString("none")
+	clearPRID  = clearString("prid")
+	clearBuild = clearString("build")
 )
 
-var clearIDs = clearNone
-var incrPart = incrPatch
+var dfltFirstPreRelIDs []string
+var clearIDs = string(clearNone)
+var incrPart = string(incrLeast)
 
 // Created: Wed Dec 26 11:19:14 2018
 
+var incrementingParamCounter paction.Counter
+var idSettingParamCounter paction.Counter
+
 func main() {
-	ps, err := paramset.New(addParams,
+	ps := paramset.NewOrDie(addParams,
 		semverparams.AddSVStringParam,
 		semverparams.AddIDParams,
 		semverparams.AddIDCheckerParams,
+		SetGlobalConfigFile,
+		SetConfigFile,
 		param.SetProgramDescription(
-			`This provides tools for manipulating semantic version numbers`),
+			"This provides tools for manipulating "+semver.Names+
+				". You can increment the various parts and set or clear"+
+				" the pre-release and build IDs.\n\n"+
+				"Alternatively you can supply the 'release-candidate'"+
+				" or 'release' parameters to start and finish a"+
+				"sequence of pre-release IDs"),
 	)
-	if err != nil {
-		log.Fatal("Couldn't construct the parameter set: ", err)
-	}
-	err = semverparams.SetAttrOnSVStringParam(param.MustBeSet)
+	err := semverparams.SetAttrOnSVStringParam(param.MustBeSet)
 	if err != nil {
 		log.Fatal(
 			"Couldn't set the must-be-set attr on the sv-string parameter: ",
@@ -56,18 +70,12 @@ func main() {
 	ps.Parse()
 	sv := semverparams.SemVer
 
-	if incrPart == "prid" {
-		if len(sv.PreRelIDs) == 0 {
-			reportProblem(sv, "Cannot increment the pre-release ID"+
-				" as the semver does not have a PRID")
-		}
-	}
-
-	err = incr(sv, incrPart)
+	err = incr(sv, incrString(incrPart))
 	if err != nil {
 		reportProblem(sv, err.Error())
 	}
-	err = setIDs(sv, clearIDs, semverparams.PreRelIDs, semverparams.BuildIDs)
+	err = setIDs(sv, clearString(clearIDs),
+		semverparams.PreRelIDs, semverparams.BuildIDs)
 	if err != nil {
 		reportProblem(sv, err.Error())
 	}
@@ -83,54 +91,68 @@ func reportProblem(sv *semver.SV, msg string) {
 }
 
 // incr increments the appropriate part of the SemVer according to the
-// setting of the incrPart parameter
-func incr(sv *semver.SV, choice string) error {
+// passed choice parameter
+func incr(sv *semver.SV, choice incrString) error {
 	switch choice {
-	case "major":
+	case incrMajor:
 		sv.IncrMajor()
-	case "minor":
+	case incrMinor:
 		sv.IncrMinor()
-	case "patch":
+	case incrPatch:
 		sv.IncrPatch()
-	case "prid":
-		newPRID, err := incrPreRelIDs(sv.PreRelIDs[len(sv.PreRelIDs)-1])
-		if err == nil {
-			sv.PreRelIDs = append(sv.PreRelIDs[0:len(sv.PreRelIDs)-1], newPRID)
+	case incrPRID:
+		if len(sv.PreRelIDs) <= 0 {
+			return errors.New("Cannot increment the pre-release ID" +
+				" as the semver does not have a PRID")
 		}
-	case "none":
+		return incrLastPartOfPRID(sv)
+	case incrLeast:
+		if len(sv.PreRelIDs) > 0 {
+			return incrLastPartOfPRID(sv)
+		}
+		sv.IncrPatch()
+	case incrNone:
 	default:
-		return errors.New("Unknown increment choice: '" + choice + "'")
+		return errors.New("Unknown increment choice: '" + string(choice) + "'")
 	}
 	return nil
 }
 
-// incrPreRelIDs will find the numeric part of the pre-release ID and
+// incrLastPartOfPRID will take the last part of the pre-release ID slice
+// (which should have been checked to ensure it's non-empty) and will
+// increment any numeric part
+func incrLastPartOfPRID(sv *semver.SV) error {
+	newPRID, err := incrNumInStr(sv.PreRelIDs[len(sv.PreRelIDs)-1])
+	if err != nil {
+		return err
+	}
+	sv.PreRelIDs = append(sv.PreRelIDs[0:len(sv.PreRelIDs)-1], newPRID)
+	return nil
+}
+
+// incrNumInStr will find the numeric part of the pre-release ID and
 // increment it, replacing it in the string in the same place as it was
 // found. If it is a wholly numeric string then it will be taken as a number
 // and incremented as normal, if it is embedded in a string just that part
 // will be incremented. For instance '123' will be changed to '124' but
 // 'RC012' will be changed to 'RC013'.
-func incrPreRelIDs(prid string) (string, error) {
+func incrNumInStr(s string) (string, error) {
 	findNumPartRE := regexp.MustCompile("([^0-9]*)([0-9]+)(.*)")
-	parts := findNumPartRE.FindStringSubmatch(prid)
+	parts := findNumPartRE.FindStringSubmatch(s)
 
 	if parts == nil {
-		return prid, errors.New("The pre-release ID ('" +
-			prid +
-			"') has no numerical part")
+		return s, fmt.Errorf("The string (%q) has no numerical part", s)
 	}
 
-	if parts[0] != prid {
-		return prid, errors.New("Only a part of the pre-release ID ('" +
-			prid +
-			"') is matched: '" +
-			parts[0] +
-			"'")
+	if parts[0] != s {
+		return s,
+			fmt.Errorf("Only a part of the pre-release ID (%q) is matched: %q",
+				s, parts[0])
 	}
 
 	if len(parts) != 4 {
-		return prid, errors.New("The pre-release ID ('" +
-			prid +
+		return s, errors.New("The pre-release ID ('" +
+			s +
 			"') should be split into a (possibly empty) prefix," +
 			" one or more digits and a (possibly empty) suffix")
 	}
@@ -139,7 +161,7 @@ func incrPreRelIDs(prid string) (string, error) {
 
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
-		return prid, errors.New(
+		return s, errors.New(
 			"Cannot convert the numeric part of the pre-release ID '" +
 				numStr +
 				"' into a number")
@@ -147,31 +169,32 @@ func incrPreRelIDs(prid string) (string, error) {
 	num++
 
 	if parts[1] == "" && parts[3] == "" {
-		prid = strconv.Itoa(num)
+		s = strconv.Itoa(num)
 	} else {
 		format := prefix + "%0" + strconv.Itoa(len(numStr)) + "d" + suffix
-		prid = fmt.Sprintf(format, num)
+		s = fmt.Sprintf(format, num)
 	}
 
-	return prid, nil
+	return s, nil
 }
 
 // setIDs clears the pre-release or build IDs according to the setting of
 // the clearIDs parameter and then sets any new values. Note that both
 // clearing and setting either of the groups of IDs is possible but the
 // setting will take precedence and any clearing is redundant
-func setIDs(sv *semver.SV, choice string, prIDs, bIDs []string) error {
+func setIDs(sv *semver.SV, choice clearString, prIDs, bIDs []string) error {
 	switch choice {
-	case "all":
+	case clearAll:
 		sv.ClearPreRelIDs()
 		sv.ClearBuildIDs()
-	case "pre-rel":
+	case clearPRID:
 		sv.ClearPreRelIDs()
-	case "build":
+	case clearBuild:
 		sv.ClearBuildIDs()
-	case "none":
+	case clearNone:
 	default:
-		return errors.New("Unknown choice of IDs to clear: '" + choice + "'")
+		return errors.New("Unknown choice of IDs to clear: '" +
+			string(choice) + "'")
 	}
 
 	if len(prIDs) > 0 {
@@ -193,18 +216,21 @@ func setIDs(sv *semver.SV, choice string, prIDs, bIDs []string) error {
 
 // addParams will add parameters to the passed PSet
 func addParams(ps *param.PSet) error {
+	countIDSettingParams := idSettingParamCounter.MakeActionFunc()
+	countIncrementingParams := incrementingParamCounter.MakeActionFunc()
+
 	ps.Add("part", psetter.Enum{
 		Value: &incrPart,
 		AVM: param.AVM{
 			AllowedVals: param.AValMap{
-				incrNone: "don't increment any part",
-				incrMajor: "increment the major version." +
+				string(incrNone): "don't increment any part",
+				string(incrMajor): "increment the major version." +
 					" This will set the minor and patch versions to 0",
-				incrMinor: "increment the minor version." +
+				string(incrMinor): "increment the minor version." +
 					" This will set the patch version to 0" +
 					" but leave the major version unchanged",
-				incrPatch: "increment just the patch version",
-				incrPRID: "increment the numeric part of the PRID." +
+				string(incrPatch): "increment just the patch version",
+				string(incrPRID): "increment the numeric part of the PRID." +
 					" Only the last part of the pre-release ID string" +
 					" will be incremented" +
 					" and it must contain a sequence of digits." +
@@ -213,50 +239,142 @@ func addParams(ps *param.PSet) error {
 					" 'rc.1' changes to 'rc.2'" +
 					" but 'rc.1.XX' will report an error since" +
 					" the last part of the pre-release ID (XX) is not numeric",
+				string(incrLeast): "increment the PRID if the semantic" +
+					" version number has one, otherwise increment the" +
+					" patch version",
 			}}},
-		"which part of the semantic version number should be incremented."+
-			" Any of these will also clear any pre-release IDs"+
+		"which part of the "+semver.Name+" should be incremented."+
+			" Incrementing any of "+
+			string(incrMajor)+", "+
+			string(incrMinor)+" or "+
+			string(incrPatch)+
+			" will also clear any pre-release IDs"+
 			" but will leave any build IDs unchanged."+
 			" Supplying new pre-release IDs will set them"+
-			" for the resultant semantic version",
-		param.AltName("version-part"))
+			" for the resultant "+semver.Name,
+		param.AltName("version-part"),
+		param.PostAction(countIncrementingParams),
+	)
 
 	ps.Add("major", psetter.Nil{},
-		"update the major part of the semantic version number",
+		"update the major part of the "+semver.Name,
 		param.AltName("maj"),
 		param.AltName("M"),
-		param.PostAction(paction.SetString(&incrPart, incrMajor)),
+		param.PostAction(paction.SetString(&incrPart, string(incrMajor))),
+		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("minor", psetter.Nil{},
-		"update the minor part of the semantic version number",
+		"update the minor part of the "+semver.Name,
 		param.AltName("min"),
 		param.AltName("m"),
-		param.PostAction(paction.SetString(&incrPart, incrMinor)),
+		param.PostAction(paction.SetString(&incrPart, string(incrMinor))),
+		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("patch", psetter.Nil{},
-		"update the patch part of the semantic version number",
+		"update the patch part of the "+semver.Name,
 		param.AltName("p"),
-		param.PostAction(paction.SetString(&incrPart, incrPatch)),
+		param.PostAction(paction.SetString(&incrPart, string(incrPatch))),
+		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("incr-prid", psetter.Nil{},
-		"update the prid part of the semantic version number",
-		param.PostAction(paction.SetString(&incrPart, incrPRID)),
+		"update the prid part of the "+semver.Name,
+		param.PostAction(paction.SetString(&incrPart, string(incrPRID))),
+		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("clear-ids", psetter.Enum{
 		Value: &clearIDs,
 		AVM: param.AVM{
 			AllowedVals: param.AValMap{
-				clearNone:  "don't clear any part",
-				clearAll:   "remove any pre-release or build identifiers",
-				clearPRID:  "remove any pre-release identifiers",
-				clearBuild: "remove any build identifiers",
+				string(clearNone):  "don't clear any part",
+				string(clearAll):   "remove any pre-release or build identifiers",
+				string(clearPRID):  "remove any pre-release identifiers",
+				string(clearBuild): "remove any build identifiers",
 			}}},
 		"which identifiers should be cleared",
-		param.AltName("clear"))
+		param.AltName("clear"),
+	)
 
+	ps.Add("release-candidate", psetter.Nil{},
+		"this will produce a "+semver.Name+" with a pre-release ID."+
+			" It sets the pre-release IDs to the value of the default"+
+			" pre-release IDs or 'rc.1' if that hasn't been set. It will"+
+			" override any value that you have given as a parameter. You"+
+			" should increment the "+semver.Name+" as necessary. This gives"+
+			" you the start of a sequence of "+semver.Names+" with"+
+			" increasing pre-release IDs which can be incremented."+
+			" The default behaviour of incrementing the least part of"+
+			" the "+semver.Name+" will mean that the pre-release ID"+
+			" will be incremented",
+		param.AltName("rc"),
+		param.PostAction(startReleaseParams),
+		param.PostAction(countIDSettingParams),
+	)
+
+	ps.Add("release", psetter.Nil{},
+		"this will produce a "+semver.Name+" suitable to label a release."+
+			" It clears the pre-release IDs and does not increment the"+
+			" numeric parts",
+		param.AltName("r"),
+		param.PostAction(paction.SetString(&incrPart, string(incrNone))),
+		param.PostAction(paction.SetString(&clearIDs, string(clearPRID))),
+		param.PostAction(countIDSettingParams),
+		param.PostAction(countIncrementingParams),
+	)
+
+	ps.Add("default-pre-rel-ids",
+		psetter.StrList{
+			Value: &dfltFirstPreRelIDs,
+			Checks: []check.StringSlice{
+				check.StringSliceStringCheck(semver.CheckPreRelID),
+				check.StringSliceLenGT(0),
+			},
+		},
+		"set the default values for the pre-release IDs. This will be"+
+			" used as the initial value for a release candidate",
+		param.AltName("default-prids"),
+		param.Attrs(param.DontShowInStdUsage),
+	)
+
+	ps.AddFinalCheck(checkIncrementingParamCounter)
+	ps.AddFinalCheck(checkIDSettingParamCounter)
+
+	return nil
+}
+
+// checkIDSettingParamCounter checks that at most one of the pre-release ID
+// setting parameters has been set.
+func checkIDSettingParamCounter() error {
+	if idSettingParamCounter.Count() > 1 {
+		return fmt.Errorf("The setting of the pre-release IDs for the %s"+
+			" has been specified more than once: %s",
+			semver.Name, idSettingParamCounter.SetBy())
+	}
+	return nil
+}
+
+// checkIncrementingParamCounter checks that at most one of the incrementing
+// parameters has been set.
+func checkIncrementingParamCounter() error {
+	if incrementingParamCounter.Count() > 1 {
+		return fmt.Errorf("The part of the %s to be incremented"+
+			" has been specified more than once: %s",
+			semver.Name, incrementingParamCounter.SetBy())
+	}
+	return nil
+}
+
+// startReleaseParams sets the parameters appropriately for the start of a
+// set of semver numbers leading up to a release - it will set the
+// pre-release ID to the default value
+func startReleaseParams(_ location.L, _ *param.ByName, _ []string) error {
+	if len(dfltFirstPreRelIDs) == 0 {
+		semverparams.PreRelIDs = []string{"rc", "1"}
+	} else {
+		semverparams.PreRelIDs = dfltFirstPreRelIDs
+	}
 	return nil
 }

@@ -23,6 +23,8 @@ var exitStatus int
 func main() {
 	ps, err := paramset.New(addParams,
 		semverparams.AddIDCheckerParams,
+		SetGlobalConfigFile,
+		SetConfigFile,
 		param.SetProgramDescription(
 			"Check the supplied semver strings."+
 				" This will read "+semver.Names+" from the standard input or"+

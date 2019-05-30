@@ -23,6 +23,8 @@ var ignoreSemVerWithPRIDs bool
 
 func main() {
 	ps, err := paramset.New(addParams,
+		SetGlobalConfigFile,
+		SetConfigFile,
 		param.SetProgramDescription(
 			"Sort semver strings read in from the standard input"+
 				" or given on the command line"),

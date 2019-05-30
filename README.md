@@ -4,8 +4,9 @@ full help on using the commands pass each one a `-help` parameter and you
 will see a, hopefully useful, help message giving the parameters that the
 command can take and a brief description of the command and what it does.
 
-They all make use of the `github.com/nickwells/semver.mod/semver` package and
-serve as examples of how to use that package.
+They all make use of the `github.com/nickwells/semver.mod/semver` and
+`github.com/nickwells/semverparam.mod/v3/semverparam` packages and serve as
+examples of how to use those packages.
 
 ## semvercheck
 This will check that a set of semantic version numbers are all well
