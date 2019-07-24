@@ -1,0 +1,3 @@
+#!/bin/bash
+
+semverList $* | tail -1

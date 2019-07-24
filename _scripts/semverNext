@@ -1,0 +1,15 @@
+#!/bin/bash
+# This will find the current semantic version number, if there is none it
+# will return v1.0.0 for the latest. Otherwise it will increment the svn
+# according to the passed arguments and check that it obeys any rules you
+# have specified for pre-release IDs
+
+sv=$(semverLatest)
+
+if [ "$sv" == "" ]
+then
+    echo v1.0.0
+    exit 0
+fi
+
+semverincr -semver "$sv" $* | semvercheck -print
