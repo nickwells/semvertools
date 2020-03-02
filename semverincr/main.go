@@ -11,12 +11,12 @@ import (
 
 	"github.com/nickwells/check.mod/check"
 	"github.com/nickwells/location.mod/location"
-	"github.com/nickwells/param.mod/v3/param"
-	"github.com/nickwells/param.mod/v3/param/paction"
-	"github.com/nickwells/param.mod/v3/param/paramset"
-	"github.com/nickwells/param.mod/v3/param/psetter"
+	"github.com/nickwells/param.mod/v4/param"
+	"github.com/nickwells/param.mod/v4/param/paction"
+	"github.com/nickwells/param.mod/v4/param/paramset"
+	"github.com/nickwells/param.mod/v4/param/psetter"
 	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/semverparams.mod/v3/semverparams"
+	"github.com/nickwells/semverparams.mod/v4/semverparams"
 )
 
 type incrString string
@@ -221,28 +221,27 @@ func addParams(ps *param.PSet) error {
 
 	ps.Add("part", psetter.Enum{
 		Value: &incrPart,
-		AVM: param.AVM{
-			AllowedVals: param.AValMap{
-				string(incrNone): "don't increment any part",
-				string(incrMajor): "increment the major version." +
-					" This will set the minor and patch versions to 0",
-				string(incrMinor): "increment the minor version." +
-					" This will set the patch version to 0" +
-					" but leave the major version unchanged",
-				string(incrPatch): "increment just the patch version",
-				string(incrPRID): "increment the numeric part of the PRID." +
-					" Only the last part of the pre-release ID string" +
-					" will be incremented" +
-					" and it must contain a sequence of digits." +
-					" So, for instance 'RC009XX' changes to 'RC010XX'," +
-					" '9' changes to '10' and" +
-					" 'rc.1' changes to 'rc.2'" +
-					" but 'rc.1.XX' will report an error since" +
-					" the last part of the pre-release ID (XX) is not numeric",
-				string(incrLeast): "increment the PRID if the semantic" +
-					" version number has one, otherwise increment the" +
-					" patch version",
-			}}},
+		AllowedVals: param.AllowedVals{
+			string(incrNone): "don't increment any part",
+			string(incrMajor): "increment the major version." +
+				" This will set the minor and patch versions to 0",
+			string(incrMinor): "increment the minor version." +
+				" This will set the patch version to 0" +
+				" but leave the major version unchanged",
+			string(incrPatch): "increment just the patch version",
+			string(incrPRID): "increment the numeric part of the PRID." +
+				" Only the last part of the pre-release ID string" +
+				" will be incremented" +
+				" and it must contain a sequence of digits." +
+				" So, for instance 'RC009XX' changes to 'RC010XX'," +
+				" '9' changes to '10' and" +
+				" 'rc.1' changes to 'rc.2'" +
+				" but 'rc.1.XX' will report an error since" +
+				" the last part of the pre-release ID (XX) is not numeric",
+			string(incrLeast): "increment the PRID if the semantic" +
+				" version number has one, otherwise increment the" +
+				" patch version",
+		}},
 		"which part of the "+semver.Name+" should be incremented."+
 			" Incrementing any of "+
 			string(incrMajor)+", "+
@@ -287,13 +286,12 @@ func addParams(ps *param.PSet) error {
 
 	ps.Add("clear-ids", psetter.Enum{
 		Value: &clearIDs,
-		AVM: param.AVM{
-			AllowedVals: param.AValMap{
-				string(clearNone):  "don't clear any part",
-				string(clearAll):   "remove any pre-release or build identifiers",
-				string(clearPRID):  "remove any pre-release identifiers",
-				string(clearBuild): "remove any build identifiers",
-			}}},
+		AllowedVals: param.AllowedVals{
+			string(clearNone):  "don't clear any part",
+			string(clearAll):   "remove any pre-release or build identifiers",
+			string(clearPRID):  "remove any pre-release identifiers",
+			string(clearBuild): "remove any build identifiers",
+		}},
 		"which identifiers should be cleared",
 		param.AltName("clear"),
 	)

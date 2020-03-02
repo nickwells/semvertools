@@ -8,11 +8,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/nickwells/param.mod/v3/param"
-	"github.com/nickwells/param.mod/v3/param/paramset"
-	"github.com/nickwells/param.mod/v3/param/psetter"
+	"github.com/nickwells/param.mod/v4/param"
+	"github.com/nickwells/param.mod/v4/param/paramset"
+	"github.com/nickwells/param.mod/v4/param/psetter"
 	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/semverparams.mod/v3/semverparams"
+	"github.com/nickwells/semverparams.mod/v4/semverparams"
 )
 
 // Created: Wed Jan 16 22:49:24 2019
