@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,16 +14,17 @@ const (
 	chkResultsSubDir = "checkResults"
 )
 
-var updateChkResults = flag.Bool("upd-chk-results", false,
-	"update the files holding the results of"+
-		" checking the lists of semantic versions")
+var gfc = testhelper.GoldenFileCfg{
+	DirNames:    []string{testDataDir, chkResultsSubDir},
+	Sfx:         "txt",
+	UpdFlagName: "upd-chk-results",
+}
+
+func init() {
+	gfc.AddUpdateFlag()
+}
 
 func TestMakeSlice(t *testing.T) {
-	gfc := testhelper.GoldenFileCfg{
-		DirNames: []string{testDataDir, chkResultsSubDir},
-		Sfx:      "txt",
-	}
-
 	testCases := []struct {
 		testhelper.ID
 		expExitStatus int
@@ -96,15 +96,13 @@ func TestMakeSlice(t *testing.T) {
 
 		var b bytes.Buffer
 		svl := getSVsFromReader(f, &b)
-		testhelper.CheckAgainstGoldenFile(t, tc.IDStr()+" - read SVs",
-			b.Bytes(),
-			gfc.PathName(tc.ID.Name+".SV.checks"), *updateChkResults)
+		gfc.Check(t, tc.IDStr()+" - read SVs", tc.ID.Name+".SV.checks",
+			b.Bytes())
 
 		var b2 bytes.Buffer
 		seqCheck(svl, &b2)
-		testhelper.CheckAgainstGoldenFile(t, tc.IDStr()+" - check list",
-			b2.Bytes(),
-			gfc.PathName(tc.ID.Name+".SVList.checks"), *updateChkResults)
+		gfc.Check(t, tc.IDStr()+" - check list", tc.ID.Name+".SVList.checks",
+			b2.Bytes())
 
 		if exitStatus != tc.expExitStatus {
 			t.Log(tc.IDStr())
