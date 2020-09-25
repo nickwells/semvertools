@@ -101,7 +101,7 @@ func incr(sv *semver.SV, choice incrString) error {
 	case incrPatch:
 		sv.IncrPatch()
 	case incrPRID:
-		if len(sv.PreRelIDs) <= 0 {
+		if len(sv.PreRelIDs) == 0 {
 			return errors.New("Cannot increment the pre-release ID" +
 				" as the semver does not have a PRID")
 		}

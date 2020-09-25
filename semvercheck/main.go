@@ -33,7 +33,7 @@ func main() {
 				" that it conforms to any additional constraints given."+
 				" If all the "+semver.Names+" are valid"+
 				" this will exit with zero exit status."+
-				" If an invalid "+semver.Name+" is seen it will prinr an error"+
+				" If an invalid "+semver.Name+" is seen it will print an error"+
 				" and the progran will terminate with"+
 				" exit status of 1.\n"+
 				" It is also possible to have the parsed "+semver.Names+
