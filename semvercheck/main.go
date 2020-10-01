@@ -1,4 +1,3 @@
-// semvercheck
 package main
 
 import (

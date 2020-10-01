@@ -1,4 +1,3 @@
-// semversort
 package main
 
 import (

@@ -1,4 +1,3 @@
-// semverincr
 package main
 
 import (
