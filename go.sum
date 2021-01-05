@@ -1,7 +1,7 @@
 github.com/nickwells/check.mod v1.6.12 h1:OHEnT789z84z5g3s0f2kv9C+UPBXQPmFqE4RYTZhCYs=
 github.com/nickwells/check.mod v1.6.12/go.mod h1:nuLLazi9TSq3Eef7sz+eXcUvQHWPbRZy8QgWmbeo0yk=
-github.com/nickwells/checksetter.mod/v3 v3.0.19 h1:6dvXbcRbPp5ru97DzjLzpZnRB+iC/8bHz5ZneybNdLo=
-github.com/nickwells/checksetter.mod/v3 v3.0.19/go.mod h1:RjSrtXdaf/mRfDXyk7iT7y+G5671sPdE/WaxIvgpIhI=
+github.com/nickwells/checksetter.mod/v3 v3.0.20 h1:k6OgEHzRLTD0ifDwYPWhMMDvpRGNCwixO6nto2PdTsE=
+github.com/nickwells/checksetter.mod/v3 v3.0.20/go.mod h1:TaiNK1la5o23iut/AcY8+iuisYaIZqvjn1iReWBXOis=
 github.com/nickwells/english.mod v1.0.11 h1:hLAZFTw+nHXfwtNMT7LOfW5OarRP4FE0Kd4w2ElZlOw=
 github.com/nickwells/english.mod v1.0.11/go.mod h1:vkUA8X+BhlOwnUZkaDlmdbLCw7D90WYiQkywJYItK8g=
 github.com/nickwells/errutil.mod v1.1.1 h1:Q7B6EMc6R/MQ0cTTBMGye1BByvzpZPXv6PSyABaMtTk=
@@ -14,12 +14,12 @@ github.com/nickwells/location.mod v1.2.16 h1:Nq8Irg0sr8gNDLJv0QOjGV/qtOpDw5f5IlU
 github.com/nickwells/location.mod v1.2.16/go.mod h1:uSywXjaNmvOaMju043ohtVQAQ7vPAH4qVYsKGPGknPw=
 github.com/nickwells/mathutil.mod v1.0.16 h1:2MXtrMvrMaRsbxMDrNUW158q0h4mpmk39+tW3z5fRdg=
 github.com/nickwells/mathutil.mod v1.0.16/go.mod h1:aashJ7Zd9+xwzKXDDY5/gEPbG0c0kpBr/FVm+8+tFng=
-github.com/nickwells/param.mod/v5 v5.3.0 h1:RfB8QugMEnY5N0Qo2ZJLJfWX1PL8V5cgLZu6R8i3Blw=
-github.com/nickwells/param.mod/v5 v5.3.0/go.mod h1:8AqY9I+uoR1vApb2iHaJVC8VCnpv539w27r+0Xq5Gjc=
+github.com/nickwells/param.mod/v5 v5.3.2 h1:3DGSrNY9GsV0xl8h6ewXLwEdYFkBZB9tHa8ec75+YO4=
+github.com/nickwells/param.mod/v5 v5.3.2/go.mod h1:ExNMdBqJBpiu42K2xcgf6vmAMBlnlU9l2wwrvnQhPeU=
 github.com/nickwells/semver.mod v1.3.17 h1:Cc15rArc96nK+4JfA6/iYJpV5qtrO78BTEFC7gKJbn0=
 github.com/nickwells/semver.mod v1.3.17/go.mod h1:NZouv33sEkQQHVz9wJX6aDwv5HoQvP4mPL9EDIqUyFQ=
-github.com/nickwells/semverparams.mod/v4 v4.0.14 h1:Gbo7VNOm0B5PZg9HCXPy7v7qTOSnVhpjMXiMkJ/7/HU=
-github.com/nickwells/semverparams.mod/v4 v4.0.14/go.mod h1:N6r6DPSZ/RTPSyJ9Re7Wb7SvZgVO/dqkjpsvRpm+IJQ=
+github.com/nickwells/semverparams.mod/v4 v4.0.15 h1:f/eeoXfe2cBxCMc+aGpuLUmttBYjJ8yMu69IuZtfoOk=
+github.com/nickwells/semverparams.mod/v4 v4.0.15/go.mod h1:Cq+pdLxXxR27GZSQHU0/y3xqFFU8rM6olG6Zj8Y0UdE=
 github.com/nickwells/strdist.mod v1.0.20 h1:sApRKiFT53rPLM316JdUpJAEuQ66Ljz2tw3X09aAR1Y=
 github.com/nickwells/strdist.mod v1.0.20/go.mod h1:PEMmZO7sb0EaHQmt+AKIUkQv4X7OMly3o5H74XuzabU=
 github.com/nickwells/testhelper.mod v1.14.0 h1:1aCkxJ7xAOUX8iiPIc+7pC/uDeAsW+/nkokg73G3obo=
@@ -29,7 +29,7 @@ github.com/nickwells/twrap.mod v1.4.10/go.mod h1:cgoe18/hDt2AS1oFt0qT9Sy0ThnvmH1
 github.com/nickwells/xdg.mod v1.0.5 h1:BkCim2ft//W1dlmh96z39YpIL4dJE7UQ1dDcMHtnfdU=
 github.com/nickwells/xdg.mod v1.0.5/go.mod h1:h8lRJMpY6oXdD6E3jJuolpO9QJE5FcTvUe8eyRzgyQo=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20201231184435-2d18734c6014 h1:joucsQqXmyBVxViHCPFjG3hx8JzIFSaym3l3MM/Jsdg=
-golang.org/x/sys v0.0.0-20201231184435-2d18734c6014/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210104204734-6f8348627aad h1:MCsdmFSdEd4UEa5TKS5JztCRHK/WtvNei1edOj5RSRo=
+golang.org/x/sys v0.0.0-20210104204734-6f8348627aad/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf h1:MZ2shdL+ZM/XzY3ZGOnh4Nlpnxz5GSOhOmtHo3iPU6M=
 golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
