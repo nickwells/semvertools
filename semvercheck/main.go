@@ -15,9 +15,12 @@ import (
 )
 
 // Created: Wed Jan 16 22:49:24 2019
-var checkList bool
-var printSV bool
-var exitStatus int
+var (
+	checkList bool
+	printSV   bool
+
+	exitStatus int
+)
 
 func main() {
 	ps, err := paramset.New(addParams,
@@ -218,7 +221,6 @@ func getSVsFromStrings(args []string, w io.Writer) semver.SVList {
 // optionally, print the semver.
 func mkRptPrt(s string, idx int, svl semver.SVList, w io.Writer) semver.SVList {
 	sv, err := makeSV(s)
-
 	if err != nil {
 		fmt.Fprintf(w, "Bad ID: %d : '%s'\n", idx, s)
 		fmt.Fprintln(w, "   ", err)
@@ -234,7 +236,6 @@ func mkRptPrt(s string, idx int, svl semver.SVList, w io.Writer) semver.SVList {
 
 // addParams adds the program-specific parameters
 func addParams(ps *param.PSet) error {
-
 	ps.Add("print", psetter.Bool{Value: &printSV},
 		"print the "+semver.Names+
 			" after the checks have been completed and passed",

@@ -14,11 +14,13 @@ import (
 	"github.com/nickwells/semver.mod/semver"
 )
 
-var reportBadSV bool
-var reverseSort bool
-var ignoreSemVerWithPRIDs bool
-
 // Created: Mon Dec 31 10:42:22 2018
+
+var (
+	reportBadSV           bool
+	reverseSort           bool
+	ignoreSemVerWithPRIDs bool
+)
 
 func main() {
 	ps, err := paramset.New(addParams,
