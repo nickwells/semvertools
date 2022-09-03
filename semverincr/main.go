@@ -256,29 +256,27 @@ func addParams(ps *param.PSet) error {
 			" but will leave any build IDs unchanged."+
 			" Supplying new pre-release IDs will set them"+
 			" for the resultant "+semver.Name,
-		param.AltName("version-part"),
+		param.AltNames("version-part"),
 		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("major", psetter.Nil{},
 		"update the major part of the "+semver.Name,
-		param.AltName("maj"),
-		param.AltName("M"),
+		param.AltNames("maj", "M"),
 		param.PostAction(paction.SetString(&incrPart, string(incrMajor))),
 		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("minor", psetter.Nil{},
 		"update the minor part of the "+semver.Name,
-		param.AltName("min"),
-		param.AltName("m"),
+		param.AltNames("min", "m"),
 		param.PostAction(paction.SetString(&incrPart, string(incrMinor))),
 		param.PostAction(countIncrementingParams),
 	)
 
 	ps.Add("patch", psetter.Nil{},
 		"update the patch part of the "+semver.Name,
-		param.AltName("p"),
+		param.AltNames("p"),
 		param.PostAction(paction.SetString(&incrPart, string(incrPatch))),
 		param.PostAction(countIncrementingParams),
 	)
@@ -300,7 +298,7 @@ func addParams(ps *param.PSet) error {
 			},
 		},
 		"which identifiers should be cleared",
-		param.AltName("clear"),
+		param.AltNames("clear"),
 	)
 
 	ps.Add("release-candidate", psetter.Nil{},
@@ -314,7 +312,7 @@ func addParams(ps *param.PSet) error {
 			" The default behaviour of incrementing the least part of"+
 			" the "+semver.Name+" will mean that the pre-release ID"+
 			" will be incremented",
-		param.AltName("rc"),
+		param.AltNames("rc"),
 		param.PostAction(startReleaseParams),
 		param.PostAction(countIDSettingParams),
 	)
@@ -323,7 +321,7 @@ func addParams(ps *param.PSet) error {
 		"this will produce a "+semver.Name+" suitable to label a release."+
 			" It clears the pre-release IDs and does not increment the"+
 			" numeric parts",
-		param.AltName("r"),
+		param.AltNames("r"),
 		param.PostAction(paction.SetString(&incrPart, string(incrNone))),
 		param.PostAction(paction.SetString(&clearIDs, string(clearPRID))),
 		param.PostAction(countIDSettingParams),
@@ -340,7 +338,7 @@ func addParams(ps *param.PSet) error {
 		},
 		"set the default values for the pre-release IDs. This will be"+
 			" used as the initial value for a release candidate",
-		param.AltName("default-prids"),
+		param.AltNames("default-prids"),
 		param.Attrs(param.DontShowInStdUsage),
 	)
 

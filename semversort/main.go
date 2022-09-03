@@ -117,17 +117,16 @@ func addParams(ps *param.PSet) error {
 		"if this flag is set then an error message will be printed"+
 			" when a string cannot be converted to a semver."+
 			" Otherwise they are silently ignored",
-		param.AltName("show-err"))
+		param.AltNames("show-err"))
 
 	ps.Add("reverse", psetter.Bool{Value: &reverseSort},
 		"if this flag is set then the sort will be in reverse order",
-		param.AltName("rev"),
-		param.AltName("r"))
+		param.AltNames("rev", "r"))
 
 	ps.Add("ignore-pre-rel", psetter.Bool{Value: &ignoreSemVerWithPRIDs},
 		"if this flag is set then the sort will ignore any"+
 			" semantic version numbers which have pre-release IDs",
-		param.AltName("no-pr"))
+		param.AltNames("no-pr"))
 
 	err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing arguments
 	if err != nil {
