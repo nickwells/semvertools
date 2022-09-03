@@ -77,9 +77,12 @@ func seqCheck(svl semver.SVList, w io.Writer) {
 // other.
 //
 // The checks are that
-//   p1 is not greater than p2
+//
+//	p1 is not greater than p2
+//
 // or that
-//   if p1 is less than p2 then it is less by 1 and all of the p2 subparts are 0
+//
+//	if p1 is less than p2 then it is less by 1 and all of the p2 subparts are 0
 //
 // It will return the bool flag set to true if it finds an error or if no
 // more checks are needed, false otherwise.
