@@ -1,1 +1,2 @@
-Bad ID list at: [0] v1.2.3, [1] v1.2.3: duplicate entries
+Bad ID list at: [0] v1.2.3, [1] v1.2.3:
+    duplicate entries

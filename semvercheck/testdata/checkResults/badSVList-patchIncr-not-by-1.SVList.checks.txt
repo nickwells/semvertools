@@ -1,1 +1,2 @@
-Bad ID list at: [0] v1.0.0, [1] v1.0.2: the semantic version IDs have gaps: the patch version number has grown but by more than 1
+Bad ID list at: [0] v1.0.0, [1] v1.0.2:
+    the semantic version IDs have gaps: the patch version has grown by 2 (should be 1)

@@ -3,28 +3,30 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
-	"log"
 	"os"
 
+	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v5/param"
 	"github.com/nickwells/param.mod/v5/param/paramset"
 	"github.com/nickwells/param.mod/v5/param/psetter"
-	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/semverparams.mod/v4/semverparams"
+	"github.com/nickwells/semver.mod/v3/semver"
+	"github.com/nickwells/semverparams.mod/v6/semverparams"
 )
 
 // Created: Wed Jan 16 22:49:24 2019
-var (
-	checkList bool
-	printSV   bool
+type Prog struct {
+	checkSeq     bool
+	printSV      bool
+	semverChecks semverparams.SemverChecks
 
 	exitStatus int
-)
+}
 
 func main() {
-	ps, err := paramset.New(addParams,
-		semverparams.AddIDCheckerParams,
+	prog := &Prog{}
+	ps := paramset.NewOrDie(prog.addParams(),
+		semverparams.AddSemverGroup,
+		prog.semverChecks.AddCheckParams(),
 		SetGlobalConfigFile,
 		SetConfigFile,
 		param.SetProgramDescription(
@@ -41,33 +43,30 @@ func main() {
 				" It is also possible to have the parsed "+semver.Names+
 				" printed out after being checked."),
 	)
-	if err != nil {
-		log.Fatal("Couldn't construct the parameter set: ", err)
-	}
 
 	ps.Parse()
 
-	var svList semver.SVList
+	var svList []*semver.SV
 	if cmdLineSVs := ps.Remainder(); len(cmdLineSVs) > 0 {
-		svList = getSVsFromStrings(cmdLineSVs, os.Stdout)
+		svList = prog.getSVsFromStrings(cmdLineSVs)
 	} else {
-		svList = getSVsFromReader(os.Stdin, os.Stdout)
+		svList = prog.getSVsFromStdin()
 	}
 
-	if checkList {
-		seqCheck(svList, os.Stdout)
+	if prog.checkSeq {
+		prog.seqCheck(svList)
 	}
-	os.Exit(exitStatus)
+	os.Exit(prog.exitStatus)
 }
 
 // seqCheck will compare each entry in the semver list against its
 // predecessor and if it is not one greater than it then it will report an
 // error.
-func seqCheck(svl semver.SVList, w io.Writer) {
+func (prog *Prog) seqCheck(svl []*semver.SV) {
 	var prevSV *semver.SV
 	for i, sv := range svl {
 		if prevSV != nil {
-			chkSequence(prevSV, sv, i, w)
+			prog.chkSequence(prevSV, sv, i)
 		}
 		prevSV = sv
 	}
@@ -76,95 +75,83 @@ func seqCheck(svl semver.SVList, w io.Writer) {
 // chkSVPart checks that the parts are in the correct relationship to each
 // other.
 //
-// The checks are that
+// The checks are that:
 //
-//	p1 is not greater than p2
+//	p2 is greater than p1
 //
-// or that
+// that
 //
-//	if p1 is less than p2 then it is less by 1 and all of the p2 subparts are 0
+//	p2 == p1 + 1
 //
-// It will return the bool flag set to true if it finds an error or if no
-// more checks are needed, false otherwise.
-// If the returned string is
-// non-empty then an error was found and the exitStatus will have been set.
-func chkSVPart(partName string, p1, p2 int, p2subs ...int) (bool, string) {
+//	and all of the p2 subparts are 0
+//
+// If any checks fail it returns a non-nil error and sets the exitStatus to 1.
+func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
+) (err error) {
+	defer func() {
+		if err != nil {
+			prog.exitStatus = 1
+		}
+	}()
 	if p1 > p2 {
-		exitStatus = 1
-		return true,
-			"the " + semver.Names + " are out of order:" +
-				" the former has a higher " + partName +
-				" version number than the latter"
+		return fmt.Errorf("the "+semver.Names+" are out of order:"+
+			" the %s version: %d > %d ", partName, p1, p2)
 	}
 	if p1 < p2 {
 		if p2 != p1+1 {
-			exitStatus = 1
-			return true,
-				"the " + semver.Names + " have gaps:" +
-					" the " + partName + " version number has grown" +
-					" but by more than 1"
+			return fmt.Errorf("the "+semver.Names+" have gaps:"+
+				" the %s version has grown by %d (should be 1)",
+				partName, p2-p1)
 		}
-		subnames := []string{"minor", "patch"}
-		for i, p := range p2subs {
+		for _, p := range p2subs {
 			if p != 0 {
-				exitStatus = 1
-				return true,
-					"the " + semver.Names + " have gaps:" +
-						" the " + partName + " version number has grown" +
-						" but the " + subnames[i+2-len(p2subs)] +
-						" version number is not zero"
+				return fmt.Errorf(
+					"the "+semver.Names+" have gaps:"+
+						" the %s version has grown"+
+						" but the subsequent parts are not all zero", partName)
 			}
 		}
-		return true, ""
 	}
-	return false, ""
+	return nil
+}
+
+// reportSeqErr reports an error in the list of IDs
+func (prog *Prog) reportSeqErr(sv1, sv2 *semver.SV, idx2 int, msg string) {
+	fmt.Printf("Bad ID list at: [%d] %s, [%d] %s:\n", idx2-1, sv1, idx2, sv2)
+	fmt.Printf("    %s\n", msg)
+	prog.exitStatus = 1
 }
 
 // chkSequence checks that the two semvers are in order and that sv2 is one
 // ahead of sv1, that either the patch, minor or major numbers are greater by
 // precisely one
-func chkSequence(sv1, sv2 *semver.SV, idx2 int, w io.Writer) {
-	done, msg := chkSVPart("major", sv1.Major, sv2.Major, sv2.Minor, sv2.Patch)
-	if msg != "" {
-		fmt.Fprintf(w, "Bad ID list at: [%d] %s, [%d] %s: %s\n",
-			idx2-1, sv1, idx2, sv2, msg)
-	}
-	if done {
-		return
-	}
+func (prog *Prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
+	sv1Parts := []int{sv1.Major(), sv1.Minor(), sv1.Patch()}
+	sv2Parts := []int{sv2.Major(), sv2.Minor(), sv2.Patch()}
+	partNames := []string{"major", "minor", "patch"}
 
-	done, msg = chkSVPart("minor", sv1.Minor, sv2.Minor, sv2.Patch)
-	if msg != "" {
-		fmt.Fprintf(w, "Bad ID list at: [%d] %s, [%d] %s: %s\n",
-			idx2-1, sv1, idx2, sv2, msg)
-	}
-	if done {
-		return
-	}
-
-	done, msg = chkSVPart("patch", sv1.Patch, sv2.Patch)
-	if msg != "" {
-		fmt.Fprintf(w, "Bad ID list at: [%d] %s, [%d] %s: %s\n",
-			idx2-1, sv1, idx2, sv2, msg)
-	}
-	if done {
-		return
+	for i, name := range partNames {
+		p1, p2 := sv1Parts[i], sv2Parts[i]
+		if p1 != p2 {
+			remainder := sv2Parts[i+1:]
+			err := prog.chkSVPart(name, p1, p2, remainder)
+			if err != nil {
+				prog.reportSeqErr(sv1, sv2, idx2, err.Error())
+			}
+			return
+		}
 	}
 
 	if semver.Less(sv2, sv1) {
-		fmt.Fprintf(w, "Bad ID list at: [%d] %s, [%d] %s: %s\n",
-			idx2-1, sv1, idx2, sv2,
+		prog.reportSeqErr(sv1, sv2, idx2,
 			"the "+semver.Names+" are out of order:"+
 				" the former is greater than the latter"+
 				" - check the pre-release IDs")
-		exitStatus = 1
 		return
 	}
 
 	if semver.Equals(sv1, sv2) {
-		fmt.Fprintf(w, "Bad ID list at: [%d] %s, [%d] %s: %s\n",
-			idx2-1, sv1, idx2, sv2, "duplicate entries")
-		exitStatus = 1
+		prog.reportSeqErr(sv1, sv2, idx2, "duplicate entries")
 		return
 	}
 }
@@ -173,48 +160,54 @@ func chkSequence(sv1, sv2 *semver.SV, idx2 int, w io.Writer) {
 // cannot be converted then a nil pointer and an error will be returned and
 // the exitStatus will be set to 1. Otherwise a pointer to a well-formed
 // semver and a nil error will be returned.
-func makeSV(s string) (*semver.SV, error) {
-	sv, err := semver.ParseSV(s)
+func (prog *Prog) makeSV(s string) (sv *semver.SV, err error) {
+	defer func() {
+		if err != nil {
+			prog.exitStatus = 1
+		}
+	}()
+
+	sv, err = semver.ParseSV(s)
 	if err != nil {
-		exitStatus = 1
 		return nil, err
 	}
-	err = semver.CheckRules(sv.PreRelIDs, semverparams.PreRelIDChecks)
+	err = semver.CheckRules(sv.PreRelIDs(), prog.semverChecks.PreRelIDChecks)
 	if err != nil {
-		exitStatus = 1
-		return nil, fmt.Errorf("Bad list of pre-release IDs: %s", err)
+		return nil, fmt.Errorf("Bad pre-release IDs: %s", err)
 	}
-	err = semver.CheckRules(sv.BuildIDs, semverparams.BuildIDChecks)
+	err = semver.CheckRules(sv.BuildIDs(), prog.semverChecks.BuildIDChecks)
 	if err != nil {
-		exitStatus = 1
-		return nil, fmt.Errorf("Bad list of build IDs: %s", err)
+		return nil, fmt.Errorf("Bad build IDs: %s", err)
 	}
 	return sv, nil
 }
 
-// getSVsFromStdIn will read semver strings from the supplied reader
+// getSVsFromStdin will read semver strings from standard input
 // and check them. It returns a list of all the valid semvers.
-func getSVsFromReader(r io.Reader, w io.Writer) semver.SVList {
-	svl := semver.SVList{}
+func (prog *Prog) getSVsFromStdin() []*semver.SV {
+	svl := []*semver.SV{}
 
-	scanner := bufio.NewScanner(r)
-	line := 0
+	scanner := bufio.NewScanner(os.Stdin)
+	loc := location.New("standard input")
 
 	for scanner.Scan() {
-		line++
-		s := scanner.Text()
-		svl = mkRptPrt(s, line, svl, w)
+		loc.Incr()
+		loc.SetContent(scanner.Text())
+		svl = append(svl, prog.mkRptPrt(loc))
 	}
 	return svl
 }
 
 // getSVsFromStrings will read semver strings from the passed list of
 // strings and check them. It returns a list of all the valid semvers
-func getSVsFromStrings(args []string, w io.Writer) semver.SVList {
-	svl := make(semver.SVList, 0, len(args))
+func (prog *Prog) getSVsFromStrings(args []string) []*semver.SV {
+	svl := make([]*semver.SV, 0, len(args))
 
-	for i, s := range args {
-		svl = mkRptPrt(s, i+1, svl, w)
+	loc := location.New("argument")
+	for _, s := range args {
+		loc.Incr()
+		loc.SetContent(s)
+		svl = append(svl, prog.mkRptPrt(loc))
 	}
 	return svl
 }
@@ -222,37 +215,48 @@ func getSVsFromStrings(args []string, w io.Writer) semver.SVList {
 // mkRptPrt creates a semver from the passed string, reports any
 // errors and adds the created semver to the list of semvers. It will also,
 // optionally, print the semver.
-func mkRptPrt(s string, idx int, svl semver.SVList, w io.Writer) semver.SVList {
-	sv, err := makeSV(s)
-	if err != nil {
-		fmt.Fprintf(w, "Bad ID: %d : '%s'\n", idx, s)
-		fmt.Fprintln(w, "   ", err)
-		return svl
+func (prog *Prog) mkRptPrt(loc *location.L) *semver.SV {
+	s, hasContent := loc.Content()
+	if !hasContent {
+		panic(fmt.Errorf(
+			"Program error: the location should have content: %s", loc))
 	}
 
-	if printSV {
+	sv, err := prog.makeSV(s)
+	if err != nil {
+		fmt.Println(loc)
+		fmt.Println("   ", err)
+		return nil
+	}
+
+	if prog.printSV {
 		fmt.Println(sv)
 	}
 
-	return append(svl, sv)
+	return sv
 }
 
 // addParams adds the program-specific parameters
-func addParams(ps *param.PSet) error {
-	ps.Add("print", psetter.Bool{Value: &printSV},
-		"print the "+semver.Names+
-			" after the checks have been completed and passed",
-	)
+func (prog *Prog) addParams() param.PSetOptFunc {
+	return func(ps *param.PSet) error {
+		ps.Add("print", psetter.Bool{Value: &prog.printSV},
+			"print the "+semver.Names+
+				" after the checks have been completed and passed",
+			param.AltNames("p"),
+		)
 
-	ps.Add("check-list", psetter.Bool{Value: &checkList},
-		"check that the "+semver.Names+
-			" are correctly ordered and that there are no gaps in the sequence",
-	)
+		ps.Add("check-seq", psetter.Bool{Value: &prog.checkSeq},
+			"check that the "+semver.Names+
+				" are correctly ordered and that there are"+
+				" no gaps in the sequence",
+			param.AltNames("check-order", "check-list"),
+		)
 
-	err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing arguments
-	if err != nil {
-		return err
+		err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing params
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
-
-	return nil
 }

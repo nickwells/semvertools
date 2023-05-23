@@ -1,1 +1,2 @@
-Bad ID list at: [0] v1.0.0, [1] v1.0.0-rc.1: the semantic version IDs are out of order: the former is greater than the latter - check the pre-release IDs
+Bad ID list at: [0] v1.0.0, [1] v1.0.0-rc.1:
+    the semantic version IDs are out of order: the former is greater than the latter - check the pre-release IDs

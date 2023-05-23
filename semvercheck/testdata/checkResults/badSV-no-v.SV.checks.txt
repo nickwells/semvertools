@@ -1,2 +1,2 @@
-Bad ID: 1 : '1.2.3'
+standard input:1: 1.2.3
     bad semantic version ID - it does not start with a 'v'

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/nickwells/testhelper.mod/testhelper"
+	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
 const (
@@ -87,27 +87,49 @@ func TestMakeSlice(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		exitStatus = 0
+		prog := &Prog{}
 		fName := filepath.Join(testDataDir, "semvers", tc.ID.Name+".txt")
 		f, err := os.Open(fName)
 		if err != nil {
 			t.Fatal("Unexpected error opening", fName, ":", err)
 		}
-
-		var b bytes.Buffer
-		svl := getSVsFromReader(f, &b)
-		gfc.Check(t, tc.IDStr()+" - read SVs", tc.ID.Name+".SV.checks",
-			b.Bytes())
-
-		var b2 bytes.Buffer
-		seqCheck(svl, &b2)
-		gfc.Check(t, tc.IDStr()+" - check list", tc.ID.Name+".SVList.checks",
-			b2.Bytes())
-
-		if exitStatus != tc.expExitStatus {
-			t.Log(tc.IDStr())
-			t.Errorf("\t: exit status (%d) not as expected (%d)",
-				exitStatus, tc.expExitStatus)
+		fileContent, err := io.ReadAll(f)
+		if err != nil {
+			t.Fatal("Unexpected error reading from", fName, ":", err)
 		}
+
+		fio, err := testhelper.NewStdioFromString(string(fileContent))
+		if err != nil {
+			t.Error("unexpected error faking IO(1)", err)
+			continue
+		}
+
+		svl := prog.getSVsFromStdin()
+		stdout, _, err := fio.Done()
+		if err != nil {
+			t.Error("unexpected error retrieving stdout and stderr (1)", err)
+			continue
+		}
+		gfc.Check(t, tc.IDStr()+" - read SVs", tc.ID.Name+".SV.checks",
+			stdout)
+
+		fio, err = testhelper.NewStdioFromString("")
+		if err != nil {
+			t.Error("unexpected error faking IO(2)", err)
+			continue
+		}
+
+		prog.seqCheck(svl)
+		stdout, _, err = fio.Done()
+		if err != nil {
+			t.Error("unexpected error retrieving stdout and stderr (2)", err)
+			continue
+		}
+		gfc.Check(t, tc.IDStr()+" - check list", tc.ID.Name+".SVList.checks",
+			stdout)
+
+		testhelper.DiffInt(t,
+			tc.IDStr(), "exit status",
+			prog.exitStatus, tc.expExitStatus)
 	}
 }
