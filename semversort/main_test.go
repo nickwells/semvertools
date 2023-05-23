@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/testhelper.mod/testhelper"
+	"github.com/nickwells/semver.mod/v3/semver"
+	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
 type TC struct {
@@ -28,24 +28,24 @@ func TestMakeSVList(t *testing.T) {
 			ID:    testhelper.MkID("good - in order"),
 			input: []string{"v1.2.3", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 		},
 		{
 			ID:    testhelper.MkID("good - in reverse order"),
 			input: []string{"v1.2.3", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
 			},
 			reverseSort: true,
 		},
@@ -53,26 +53,26 @@ func TestMakeSVList(t *testing.T) {
 			ID:    testhelper.MkID("good - in order, with pre-release IDs"),
 			input: []string{"v1.2.3", "v2.3.4-rc.1", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4, PreRelIDs: []string{"rc", "1"}},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, []string{"rc", "1"}, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4, PreRelIDs: []string{"rc", "1"}},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, []string{"rc", "1"}, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 		},
 		{
 			ID:    testhelper.MkID("good - in order, ignore pre-release IDs"),
 			input: []string{"v1.2.3", "v2.3.4-rc.1", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			ignoreSemVerWithPRIDs: true,
 		},
@@ -80,24 +80,24 @@ func TestMakeSVList(t *testing.T) {
 			ID:    testhelper.MkID("good - in order - has bad semver"),
 			input: []string{"v1.2.3", "v2.3.4.1", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 		},
 		{
 			ID:    testhelper.MkID("good - in order - has bad semver"),
 			input: []string{"v1.2.3", "v2.3.4.1", "v2.3.4"},
 			expSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			expSortedSVList: semver.SVList{
-				&semver.SV{Major: 1, Minor: 2, Patch: 3},
-				&semver.SV{Major: 2, Minor: 3, Patch: 4},
+				semver.NewSVOrPanic(1, 2, 3, nil, nil),
+				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			reportBadSV: true,
 			expErrStr: "bad semantic version ID" +

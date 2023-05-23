@@ -11,7 +11,7 @@ import (
 	"github.com/nickwells/param.mod/v5/param"
 	"github.com/nickwells/param.mod/v5/param/paramset"
 	"github.com/nickwells/param.mod/v5/param/psetter"
-	"github.com/nickwells/semver.mod/semver"
+	"github.com/nickwells/semver.mod/v3/semver"
 )
 
 // Created: Mon Dec 31 10:42:22 2018
@@ -72,7 +72,7 @@ func makeSV(s string, errOut io.Writer) *semver.SV {
 		}
 		return nil
 	}
-	if len(sv.PreRelIDs) > 0 && ignoreSemVerWithPRIDs {
+	if sv.HasPreRelIDs() && ignoreSemVerWithPRIDs {
 		return nil
 	}
 	return sv
