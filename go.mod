@@ -9,12 +9,14 @@ require (
 	github.com/nickwells/semver.mod/v3 v3.1.1
 	github.com/nickwells/semverparams.mod/v6 v6.2.3
 	github.com/nickwells/testhelper.mod/v2 v2.2.0
+	github.com/nickwells/versionparams.mod v1.1.16
 	github.com/nickwells/xdg.mod v1.0.9
 )
 
 require (
 	github.com/nickwells/check.mod/v2 v2.1.10 // indirect
 	github.com/nickwells/checksetter.mod/v4 v4.0.3 // indirect
+	github.com/nickwells/col.mod/v3 v3.0.15 // indirect
 	github.com/nickwells/english.mod v1.1.4 // indirect
 	github.com/nickwells/errutil.mod v1.2.12 // indirect
 	github.com/nickwells/fileparse.mod v1.1.30 // indirect
