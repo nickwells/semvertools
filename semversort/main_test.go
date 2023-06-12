@@ -107,12 +107,14 @@ func TestMakeSVList(t *testing.T) {
 
 	var errBuff bytes.Buffer
 	for _, tc := range testCases {
-		reportBadSV = tc.reportBadSV
-		ignoreSemVerWithPRIDs = tc.ignoreSemVerWithPRIDs
-		reverseSort = tc.reverseSort
+		prog := NewProg()
+		prog.reportBadSV = tc.reportBadSV
+		prog.ignoreSemVerWithPRIDs = tc.ignoreSemVerWithPRIDs
+		prog.reverseSort = tc.reverseSort
 
 		errBuff.Reset()
-		svList := getSVListFromStrings(tc.input, &errBuff)
+		prog.errOut = &errBuff
+		svList := prog.getSVListFromStrings(tc.input)
 		if reportGetDiffs(t, svList, tc, "getSVListFromStrings") {
 			continue
 		}
@@ -121,9 +123,8 @@ func TestMakeSVList(t *testing.T) {
 		}
 
 		errBuff.Reset()
-		svList = getSVListFromReader(
-			strings.NewReader(strings.Join(tc.input, "\n")),
-			&errBuff)
+		svList = prog.getSVListFromReader(
+			strings.NewReader(strings.Join(tc.input, "\n")))
 		if reportGetDiffs(t, svList, tc, "getSVListFromReader") {
 			continue
 		}
@@ -131,7 +132,7 @@ func TestMakeSVList(t *testing.T) {
 			continue
 		}
 
-		sortList(svList)
+		prog.sortList(svList)
 		reportSortDiffs(t, svList, tc)
 	}
 }

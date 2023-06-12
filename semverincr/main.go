@@ -9,7 +9,6 @@ import (
 
 	"github.com/nickwells/param.mod/v5/param"
 	"github.com/nickwells/param.mod/v5/param/paction"
-	"github.com/nickwells/param.mod/v5/param/paramset"
 	"github.com/nickwells/param.mod/v5/param/psetter"
 	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/semverparams.mod/v6/semverparams"
@@ -35,7 +34,7 @@ const (
 	paramNameDfltPRID         = "default-pre-rel-IDs"
 )
 
-type SemverIncr struct {
+type Prog struct {
 	dfltFirstPreRelIDs []string
 	releaseCandidate   bool
 	release            bool
@@ -50,41 +49,29 @@ type SemverIncr struct {
 	semverChecks semverparams.SemverChecks
 }
 
-func main() {
-	semverIncr := SemverIncr{
+// NewProg creates an initialised Prog value
+func NewProg() *Prog {
+	return &Prog{
 		dfltFirstPreRelIDs: []string{"rc", "1"},
 
-		clearIDs:   string(clearNone),
-		incrPart:   string(incrLeast),
+		clearIDs:   clearNone,
+		incrPart:   incrLeast,
 		semverVals: semverparams.SemverVals{SemverAttrs: param.MustBeSet},
 	}
-	ps := paramset.NewOrDie(
-		addParams(&semverIncr),
-		semverparams.AddSemverGroup,
-		semverIncr.semverVals.AddSemverParam(&semverIncr.semverChecks),
-		semverIncr.semverVals.AddIDParams(&semverIncr.semverChecks),
-		semverIncr.semverChecks.AddCheckParams(),
-		SetGlobalConfigFile,
-		SetConfigFile,
-		param.SetProgramDescription(
-			"This provides tools for manipulating "+semver.Names+
-				". You can increment the various parts and set or clear"+
-				" the pre-release and build IDs.\n\n"+
-				"Alternatively you can supply"+
-				" the '"+paramNameReleaseCandidate+"'"+
-				" or '"+paramNameRelease+"' parameters"+
-				" to start or finish a"+
-				"sequence of pre-releases"),
-	)
+}
+
+func main() {
+	prog := NewProg()
+	ps := makeParamSet(prog)
 
 	ps.Parse()
-	sv := &semverIncr.semverVals.SemVer
+	sv := &prog.semverVals.SemVer
 
-	err := semverIncr.incr()
+	err := prog.incr()
 	if err != nil {
 		reportProblem(sv, err.Error())
 	}
-	err = semverIncr.setIDs()
+	err = prog.setIDs()
 	if err != nil {
 		reportProblem(sv, err.Error())
 	}
@@ -101,14 +88,14 @@ func reportProblem(sv *semver.SV, msg string) {
 
 // incr increments the appropriate part of the SemVer according to the
 // passed choice parameter
-func (si *SemverIncr) incr() error {
-	if si.release {
+func (prog *Prog) incr() error {
+	if prog.release {
 		return nil
 	}
 
-	sv := &si.semverVals.SemVer
+	sv := &prog.semverVals.SemVer
 
-	switch si.incrPart {
+	switch prog.incrPart {
 	case incrMajor:
 		sv.IncrMajor()
 	case incrMinor:
@@ -128,7 +115,7 @@ func (si *SemverIncr) incr() error {
 		sv.IncrPatch()
 	case incrNone:
 	default:
-		return fmt.Errorf("Unknown increment choice: %q", si.incrPart)
+		return fmt.Errorf("Unknown increment choice: %q", prog.incrPart)
 	}
 	return nil
 }
@@ -199,10 +186,10 @@ func incrNumInStr(s string) (string, error) {
 
 // clearSemverIDs clears the pre-release or build IDs according to the
 // setting of the clearIDs parameter.
-func (si *SemverIncr) clearSemverIDs() error {
-	sv := &si.semverVals.SemVer
+func (prog *Prog) clearSemverIDs() error {
+	sv := &prog.semverVals.SemVer
 
-	switch si.clearIDs {
+	switch prog.clearIDs {
 	case clearAll:
 		sv.ClearPreRelIDs()
 		sv.ClearBuildIDs()
@@ -212,7 +199,7 @@ func (si *SemverIncr) clearSemverIDs() error {
 		sv.ClearBuildIDs()
 	case clearNone:
 	default:
-		return fmt.Errorf("Unknown choice of IDs to clear: %q", si.clearIDs)
+		return fmt.Errorf("Unknown choice of IDs to clear: %q", prog.clearIDs)
 	}
 
 	return nil
@@ -222,16 +209,16 @@ func (si *SemverIncr) clearSemverIDs() error {
 // the clearIDs parameter and then sets any new values. Note that both
 // clearing and setting either of the groups of IDs is possible but the
 // setting will take precedence and any clearing is redundant
-func (si *SemverIncr) setIDs() error {
-	err := si.clearSemverIDs()
+func (prog *Prog) setIDs() error {
+	err := prog.clearSemverIDs()
 	if err != nil {
 		return err
 	}
 
-	sv := &si.semverVals.SemVer
+	sv := &prog.semverVals.SemVer
 
-	if bIDs := si.semverVals.BuildIDs; len(bIDs) > 0 {
-		err := semver.CheckRules(bIDs, si.semverChecks.BuildIDChecks)
+	if bIDs := prog.semverVals.BuildIDs; len(bIDs) > 0 {
+		err := semver.CheckRules(bIDs, prog.semverChecks.BuildIDChecks)
 		if err != nil {
 			return errors.New("bad Build IDs: " + err.Error())
 		}
@@ -241,17 +228,17 @@ func (si *SemverIncr) setIDs() error {
 		}
 	}
 
-	if si.release {
+	if prog.release {
 		sv.ClearPreRelIDs()
 		return nil
 	}
 
-	if si.releaseCandidate {
-		return sv.SetPreRelIDs(si.dfltFirstPreRelIDs)
+	if prog.releaseCandidate {
+		return sv.SetPreRelIDs(prog.dfltFirstPreRelIDs)
 	}
 
-	if prIDs := si.semverVals.PreRelIDs; len(prIDs) > 0 {
-		err := semver.CheckRules(prIDs, si.semverChecks.PreRelIDChecks)
+	if prIDs := prog.semverVals.PreRelIDs; len(prIDs) > 0 {
+		err := semver.CheckRules(prIDs, prog.semverChecks.PreRelIDChecks)
 		if err != nil {
 			return errors.New("bad Pre-Release IDs: " + err.Error())
 		}
@@ -261,15 +248,15 @@ func (si *SemverIncr) setIDs() error {
 }
 
 // addParams will add parameters to the passed PSet
-func addParams(paramVals *SemverIncr) param.PSetOptFunc {
+func addParams(prog *Prog) param.PSetOptFunc {
 	return func(ps *param.PSet) error {
 		var (
-			countSetIDParams = paramVals.setIDParamCounter.MakeActionFunc()
-			countIncrParams  = paramVals.incrParamCounter.MakeActionFunc()
+			countSetIDParams = prog.setIDParamCounter.MakeActionFunc()
+			countIncrParams  = prog.incrParamCounter.MakeActionFunc()
 		)
 		ps.Add("part",
 			psetter.Enum{
-				Value: &paramVals.incrPart,
+				Value: &prog.incrPart,
 				AllowedVals: psetter.AllowedVals{
 					string(incrNone): "don't increment any part",
 					string(incrMajor): "increment the major version." +
@@ -303,7 +290,7 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 				" but will leave any build IDs unchanged."+
 				" Supplying new pre-release IDs will set them"+
 				" for the resultant "+semver.Name,
-			param.AltNames("version-part"),
+			param.AltNames("semver-part"),
 			param.PostAction(countIncrParams),
 		)
 
@@ -311,7 +298,7 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 			"update the major part of the "+semver.Name,
 			param.AltNames("maj", "M"),
 			param.PostAction(
-				paction.SetString(&paramVals.incrPart, string(incrMajor))),
+				paction.SetVal(&prog.incrPart, string(incrMajor))),
 			param.PostAction(countIncrParams),
 		)
 
@@ -319,7 +306,7 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 			"update the minor part of the "+semver.Name,
 			param.AltNames("min", "m"),
 			param.PostAction(
-				paction.SetString(&paramVals.incrPart, string(incrMinor))),
+				paction.SetVal(&prog.incrPart, string(incrMinor))),
 			param.PostAction(countIncrParams),
 		)
 
@@ -327,20 +314,20 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 			"update the patch part of the "+semver.Name,
 			param.AltNames("p"),
 			param.PostAction(
-				paction.SetString(&paramVals.incrPart, string(incrPatch))),
+				paction.SetVal(&prog.incrPart, string(incrPatch))),
 			param.PostAction(countIncrParams),
 		)
 
 		ps.Add("incr-prid", psetter.Nil{},
 			"update the prid part of the "+semver.Name,
 			param.PostAction(
-				paction.SetString(&paramVals.incrPart, string(incrPRID))),
+				paction.SetVal(&prog.incrPart, string(incrPRID))),
 			param.PostAction(countIncrParams),
 		)
 
 		ps.Add("clear-ids",
 			psetter.Enum{
-				Value: &paramVals.clearIDs,
+				Value: &prog.clearIDs,
 				AllowedVals: psetter.AllowedVals{
 					string(clearNone): "don't clear any part",
 					string(clearAll): "clear any pre-release &" +
@@ -355,7 +342,7 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 		)
 
 		ps.Add(paramNameReleaseCandidate,
-			psetter.Bool{Value: &paramVals.releaseCandidate},
+			psetter.Bool{Value: &prog.releaseCandidate},
 			"this will produce a "+semver.Name+" with a pre-release ID."+
 				" It sets the pre-release IDs to the value of the default"+
 				" pre-release IDs. It will"+
@@ -372,20 +359,20 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 			param.SeeAlso(paramNameRelease),
 		)
 
-		ps.Add(paramNameRelease, psetter.Bool{Value: &paramVals.release},
+		ps.Add(paramNameRelease, psetter.Bool{Value: &prog.release},
 			"this will produce a "+semver.Name+" suitable to label a release."+
 				" It clears the pre-release IDs and does not increment the"+
 				" numeric parts",
 			param.AltNames("r"),
 			param.PostAction(
-				paction.SetString(&paramVals.incrPart, string(incrNone))),
+				paction.SetVal(&prog.incrPart, string(incrNone))),
 			param.PostAction(countSetIDParams),
 			param.PostAction(countIncrParams),
 			param.SeeAlso(paramNameReleaseCandidate),
 		)
 
 		ps.Add(paramNameDfltPRID,
-			semverparams.IDListSetter(&paramVals.dfltFirstPreRelIDs,
+			semverparams.IDListSetter(&prog.dfltFirstPreRelIDs,
 				semver.CheckPreRelID),
 			"set the default values for the 1st pre-release IDs. This will be"+
 				" used as the initial value for a release candidate",
@@ -396,13 +383,13 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 		ps.AddFinalCheck(
 			checkCounter(
 				"The part of the "+semver.Name+" to be incremented",
-				&paramVals.incrParamCounter))
+				&prog.incrParamCounter))
 		ps.AddFinalCheck(
 			checkCounter(
 				"The setting of the pre-release IDs for the "+semver.Name,
-				&paramVals.setIDParamCounter))
+				&prog.setIDParamCounter))
 
-		ps.AddFinalCheck(checkReleaseVals(paramVals))
+		ps.AddFinalCheck(checkReleaseVals(prog))
 
 		return nil
 	}
@@ -414,9 +401,9 @@ func addParams(paramVals *SemverIncr) param.PSetOptFunc {
 // cannot have both release and release candidate set at the same time.
 //
 // - you cannot have pre-release IDs set if either of these have been set
-func checkReleaseVals(paramVals *SemverIncr) param.FinalCheckFunc {
+func checkReleaseVals(prog *Prog) param.FinalCheckFunc {
 	return func() error {
-		if paramVals.release && paramVals.releaseCandidate {
+		if prog.release && prog.releaseCandidate {
 			return fmt.Errorf(
 				"both %q and %q parameters have been set,"+
 					" only one or neither is allowed",
@@ -424,8 +411,8 @@ func checkReleaseVals(paramVals *SemverIncr) param.FinalCheckFunc {
 				paramNameReleaseCandidate)
 		}
 
-		if paramVals.release &&
-			paramVals.semverVals.PreRelIDsHaveBeenSet() {
+		if prog.release &&
+			prog.semverVals.PreRelIDsHaveBeenSet() {
 			return fmt.Errorf(
 				"the %q parameter has been set,"+
 					" and pre-release IDs have been set."+
@@ -433,8 +420,8 @@ func checkReleaseVals(paramVals *SemverIncr) param.FinalCheckFunc {
 				paramNameRelease)
 		}
 
-		if paramVals.releaseCandidate &&
-			paramVals.semverVals.PreRelIDsHaveBeenSet() {
+		if prog.releaseCandidate &&
+			prog.semverVals.PreRelIDsHaveBeenSet() {
 			return fmt.Errorf(
 				"the %q parameter has been set,"+
 					" and pre-release IDs have been set."+

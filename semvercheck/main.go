@@ -7,7 +7,6 @@ import (
 
 	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v5/param"
-	"github.com/nickwells/param.mod/v5/param/paramset"
 	"github.com/nickwells/param.mod/v5/param/psetter"
 	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/semverparams.mod/v6/semverparams"
@@ -22,27 +21,14 @@ type Prog struct {
 	exitStatus int
 }
 
+// NewProg returns a new Prog instance with any default values set
+func NewProg() *Prog {
+	return &Prog{}
+}
+
 func main() {
-	prog := &Prog{}
-	ps := paramset.NewOrDie(prog.addParams(),
-		semverparams.AddSemverGroup,
-		prog.semverChecks.AddCheckParams(),
-		SetGlobalConfigFile,
-		SetConfigFile,
-		param.SetProgramDescription(
-			"Check the supplied semver strings."+
-				" This will read "+semver.Names+" from the standard input or"+
-				" passed as arguments following "+param.DfltTerminalParam+"."+
-				" For each it will check that it is valid and also"+
-				" that it conforms to any additional constraints given."+
-				" If all the "+semver.Names+" are valid"+
-				" this will exit with zero exit status."+
-				" If an invalid "+semver.Name+" is seen it will print an error"+
-				" and the progran will terminate with"+
-				" exit status of 1.\n"+
-				" It is also possible to have the parsed "+semver.Names+
-				" printed out after being checked."),
-	)
+	prog := NewProg()
+	ps := makeParamSet(prog)
 
 	ps.Parse()
 
