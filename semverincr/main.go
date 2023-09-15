@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/nickwells/param.mod/v5/param"
-	"github.com/nickwells/param.mod/v5/param/paction"
-	"github.com/nickwells/param.mod/v5/param/psetter"
+	"github.com/nickwells/param.mod/v6/paction"
+	"github.com/nickwells/param.mod/v6/param"
+	"github.com/nickwells/param.mod/v6/psetter"
 	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/semverparams.mod/v6/semverparams"
 )
@@ -255,17 +255,17 @@ func addParams(prog *Prog) param.PSetOptFunc {
 			countIncrParams  = prog.incrParamCounter.MakeActionFunc()
 		)
 		ps.Add("part",
-			psetter.Enum{
+			psetter.Enum[string]{
 				Value: &prog.incrPart,
-				AllowedVals: psetter.AllowedVals{
-					string(incrNone): "don't increment any part",
-					string(incrMajor): "increment the major version." +
+				AllowedVals: psetter.AllowedVals[string]{
+					incrNone: "don't increment any part",
+					incrMajor: "increment the major version." +
 						" This will set the minor and patch versions to 0",
-					string(incrMinor): "increment the minor version." +
+					incrMinor: "increment the minor version." +
 						" This will set the patch version to 0" +
 						" but leave the major version unchanged",
-					string(incrPatch): "increment just the patch version",
-					string(incrPRID): "increment the numeric part of the" +
+					incrPatch: "increment just the patch version",
+					incrPRID: "increment the numeric part of the" +
 						" PRID." +
 						" Only the last part of the pre-release ID string" +
 						" will be incremented" +
@@ -276,16 +276,16 @@ func addParams(prog *Prog) param.PSetOptFunc {
 						" but 'rc.1.XX' will report an error since" +
 						" the last part of the pre-release ID (XX) is" +
 						" not numeric",
-					string(incrLeast): "increment the PRID if the semantic" +
+					incrLeast: "increment the PRID if the semantic" +
 						" version number has one, otherwise increment the" +
 						" patch version",
 				},
 			},
 			"which part of the "+semver.Name+" should be incremented."+
 				" Incrementing any of "+
-				string(incrMajor)+", "+
-				string(incrMinor)+" or "+
-				string(incrPatch)+
+				incrMajor+", "+
+				incrMinor+" or "+
+				incrPatch+
 				" will also clear any pre-release IDs"+
 				" but will leave any build IDs unchanged."+
 				" Supplying new pre-release IDs will set them"+
@@ -298,7 +298,7 @@ func addParams(prog *Prog) param.PSetOptFunc {
 			"update the major part of the "+semver.Name,
 			param.AltNames("maj", "M"),
 			param.PostAction(
-				paction.SetVal(&prog.incrPart, string(incrMajor))),
+				paction.SetVal(&prog.incrPart, incrMajor)),
 			param.PostAction(countIncrParams),
 		)
 
@@ -306,7 +306,7 @@ func addParams(prog *Prog) param.PSetOptFunc {
 			"update the minor part of the "+semver.Name,
 			param.AltNames("min", "m"),
 			param.PostAction(
-				paction.SetVal(&prog.incrPart, string(incrMinor))),
+				paction.SetVal(&prog.incrPart, incrMinor)),
 			param.PostAction(countIncrParams),
 		)
 
@@ -314,26 +314,26 @@ func addParams(prog *Prog) param.PSetOptFunc {
 			"update the patch part of the "+semver.Name,
 			param.AltNames("p"),
 			param.PostAction(
-				paction.SetVal(&prog.incrPart, string(incrPatch))),
+				paction.SetVal(&prog.incrPart, incrPatch)),
 			param.PostAction(countIncrParams),
 		)
 
 		ps.Add("incr-prid", psetter.Nil{},
 			"update the prid part of the "+semver.Name,
 			param.PostAction(
-				paction.SetVal(&prog.incrPart, string(incrPRID))),
+				paction.SetVal(&prog.incrPart, incrPRID)),
 			param.PostAction(countIncrParams),
 		)
 
 		ps.Add("clear-ids",
-			psetter.Enum{
+			psetter.Enum[string]{
 				Value: &prog.clearIDs,
-				AllowedVals: psetter.AllowedVals{
-					string(clearNone): "don't clear any part",
-					string(clearAll): "clear any pre-release &" +
+				AllowedVals: psetter.AllowedVals[string]{
+					clearNone: "don't clear any part",
+					clearAll: "clear any pre-release &" +
 						" build identifiers",
-					string(clearPRID):  "clear any pre-release identifiers",
-					string(clearBuild): "clear any build identifiers",
+					clearPRID:  "clear any pre-release identifiers",
+					clearBuild: "clear any build identifiers",
 				},
 			},
 			"which identifiers should be cleared",
@@ -365,7 +365,7 @@ func addParams(prog *Prog) param.PSetOptFunc {
 				" numeric parts",
 			param.AltNames("r"),
 			param.PostAction(
-				paction.SetVal(&prog.incrPart, string(incrNone))),
+				paction.SetVal(&prog.incrPart, incrNone)),
 			param.PostAction(countSetIDParams),
 			param.PostAction(countIncrParams),
 			param.SeeAlso(paramNameReleaseCandidate),
