@@ -11,7 +11,7 @@ require (
 	github.com/nickwells/semver.mod/v3 v3.1.3
 	github.com/nickwells/semverparams.mod/v6 v6.2.6
 	github.com/nickwells/testhelper.mod/v2 v2.3.0
-	github.com/nickwells/versionparams.mod v1.1.18
+	github.com/nickwells/versionparams.mod v1.2.0
 	github.com/nickwells/xdg.mod v1.0.9
 )
 
