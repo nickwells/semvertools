@@ -103,8 +103,9 @@ func TestMakeSVList(t *testing.T) {
 			},
 			reportBadSV: true,
 			expErrStr: badSV + " : " +
-				"bad semantic version ID" +
-				" - the patch version: '4.1' is not an integer\n",
+				"bad semantic version ID - the patch version:" +
+				` "4.1"` +
+				" is not an integer\n",
 		},
 	}
 
