@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"sort"
 
 	"github.com/nickwells/semver.mod/v3/semver"
@@ -17,6 +18,7 @@ type Prog struct {
 	reportBadSV           bool
 	reverseSort           bool
 	ignoreSemVerWithPRIDs bool
+	hideRestOfLine        bool
 
 	errOut io.Writer
 }
@@ -36,16 +38,35 @@ func main() {
 
 	var svList semver.SVList
 
+	var svRestOfLineMap map[string][]string
+
 	if cmdLineSVs := ps.Remainder(); len(cmdLineSVs) > 0 {
 		svList = prog.getSVListFromStrings(cmdLineSVs)
 	} else {
-		svList = prog.getSVListFromReader(os.Stdin)
+		svList, svRestOfLineMap = prog.getSVListFromReader(os.Stdin)
 	}
 
 	prog.sortList(svList)
 
+	var prevSV semver.SV
+	var rolIdx int
+
 	for _, sv := range svList {
-		fmt.Println(sv)
+		fmt.Print(sv)
+
+		if semver.Equals(&prevSV, sv) {
+			rolIdx++
+		} else {
+			rolIdx = 0
+		}
+
+		prevSV = *sv
+
+		if rol, ok := svRestOfLineMap[sv.String()]; ok && !prog.hideRestOfLine {
+			fmt.Print(rol[rolIdx])
+		}
+
+		fmt.Println()
 	}
 }
 
@@ -76,21 +97,32 @@ func (prog *Prog) makeSV(s string, errOut io.Writer) *semver.SV {
 	return sv
 }
 
-// getSVListFromReader will read semver strings from the standard input
-// and create a SVList from them
-func (prog *Prog) getSVListFromReader(r io.Reader) semver.SVList {
+// getSVListFromReader will read semver strings from the standard input and
+// create a SVList from them. It will split each line read into a leading
+// string of non-space characters and the rest of the line from the first
+// whitespace character to the end. The non-semver remainder of the line is
+// stored in a map indexed by the semver which is returned with the list of
+// semvers.
+func (prog *Prog) getSVListFromReader(r io.Reader,
+) (
+	semver.SVList, map[string][]string,
+) {
+	re := regexp.MustCompile(`[[:space:]]*([^[:space:]]*)([[:space:]]?.*)`)
 	svList := make(semver.SVList, 0)
+	svROLMap := make(map[string][]string)
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		sv := prog.makeSV(scanner.Text(), prog.errOut)
+		parts := re.FindStringSubmatch(scanner.Text())
+		sv := prog.makeSV(parts[1], prog.errOut)
 		if sv == nil {
 			continue
 		}
+		svROLMap[parts[1]] = append(svROLMap[parts[1]], parts[2])
 
 		svList = append(svList, sv)
 	}
-	return svList
+	return svList, svROLMap
 }
 
 // getSVListFromStrings will read semver strings from the passed list of

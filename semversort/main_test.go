@@ -126,7 +126,7 @@ func TestMakeSVList(t *testing.T) {
 		}
 
 		errBuff.Reset()
-		svList = prog.getSVListFromReader(
+		svList, _ = prog.getSVListFromReader(
 			strings.NewReader(strings.Join(tc.input, "\n")))
 		if reportGetDiffs(t, svList, tc, "getSVListFromReader") {
 			continue

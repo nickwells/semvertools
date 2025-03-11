@@ -26,6 +26,12 @@ func addParams(prog *Prog) param.PSetOptFunc {
 				" semantic version numbers which have pre-release IDs",
 			param.AltNames("no-pr"))
 
+		ps.Add("only-show-semvers",
+			psetter.Bool{Value: &prog.hideRestOfLine},
+			"if this flag is set then any text following the semantic"+
+				" version number (separated by white space) will not be shown",
+			param.AltNames("hide-rest-of-line", "hide"))
+
 		err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing params
 		if err != nil {
 			return err
