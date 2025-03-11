@@ -23,6 +23,8 @@ type TC struct {
 }
 
 func TestMakeSVList(t *testing.T) {
+	const badSV = "v2.3.4.1"
+
 	testCases := []TC{
 		{
 			ID:    testhelper.MkID("good - in order"),
@@ -78,7 +80,7 @@ func TestMakeSVList(t *testing.T) {
 		},
 		{
 			ID:    testhelper.MkID("good - in order - has bad semver"),
-			input: []string{"v1.2.3", "v2.3.4.1", "v2.3.4"},
+			input: []string{"v1.2.3", badSV, "v2.3.4"},
 			expSVList: semver.SVList{
 				semver.NewSVOrPanic(1, 2, 3, nil, nil),
 				semver.NewSVOrPanic(2, 3, 4, nil, nil),
@@ -90,7 +92,7 @@ func TestMakeSVList(t *testing.T) {
 		},
 		{
 			ID:    testhelper.MkID("good - in order - has bad semver"),
-			input: []string{"v1.2.3", "v2.3.4.1", "v2.3.4"},
+			input: []string{"v1.2.3", badSV, "v2.3.4"},
 			expSVList: semver.SVList{
 				semver.NewSVOrPanic(1, 2, 3, nil, nil),
 				semver.NewSVOrPanic(2, 3, 4, nil, nil),
@@ -100,7 +102,8 @@ func TestMakeSVList(t *testing.T) {
 				semver.NewSVOrPanic(2, 3, 4, nil, nil),
 			},
 			reportBadSV: true,
-			expErrStr: "bad semantic version ID" +
+			expErrStr: badSV + " : " +
+				"bad semantic version ID" +
 				" - the patch version: '4.1' is not an integer\n",
 		},
 	}

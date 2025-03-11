@@ -66,7 +66,7 @@ func (prog *Prog) makeSV(s string, errOut io.Writer) *semver.SV {
 	sv, err := semver.ParseSV(s)
 	if err != nil {
 		if prog.reportBadSV {
-			fmt.Fprintln(errOut, err)
+			fmt.Fprintln(errOut, s, ":", err)
 		}
 		return nil
 	}
