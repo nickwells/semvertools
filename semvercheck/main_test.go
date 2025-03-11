@@ -89,10 +89,12 @@ func TestMakeSlice(t *testing.T) {
 	for _, tc := range testCases {
 		prog := &Prog{}
 		fName := filepath.Join(testDataDir, "semvers", tc.ID.Name+".txt")
+
 		f, err := os.Open(fName)
 		if err != nil {
 			t.Fatal("Unexpected error opening", fName, ":", err)
 		}
+
 		fileContent, err := io.ReadAll(f)
 		if err != nil {
 			t.Fatal("Unexpected error reading from", fName, ":", err)
@@ -105,11 +107,13 @@ func TestMakeSlice(t *testing.T) {
 		}
 
 		svl := prog.getSVsFromStdin()
+
 		stdout, _, err := fio.Done()
 		if err != nil {
 			t.Error("unexpected error retrieving stdout and stderr (1)", err)
 			continue
 		}
+
 		gfc.Check(t, tc.IDStr()+" - read SVs", tc.ID.Name+".SV.checks",
 			stdout)
 
@@ -120,11 +124,13 @@ func TestMakeSlice(t *testing.T) {
 		}
 
 		prog.seqCheck(svl)
+
 		stdout, _, err = fio.Done()
 		if err != nil {
 			t.Error("unexpected error retrieving stdout and stderr (2)", err)
 			continue
 		}
+
 		gfc.Check(t, tc.IDStr()+" - check list", tc.ID.Name+".SVList.checks",
 			stdout)
 

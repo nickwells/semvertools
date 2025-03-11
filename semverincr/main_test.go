@@ -57,6 +57,7 @@ func TestIncrPRID(t *testing.T) {
 			t.Log("\t:      got: '" + s + "'")
 			t.Errorf("\t: unexpected value of incremented prid\n")
 		}
+
 		testhelper.CheckExpErr(t, err, tc)
 	}
 }
@@ -141,8 +142,11 @@ func TestSetIDs(t *testing.T) {
 			},
 			clearIDs: string(tc.idPart),
 		}
+
 		err = si.setIDs()
+
 		testhelper.CheckExpErr(t, err, tc)
+
 		if !semver.Equals(&si.semverVals.SemVer, tc.svExpected) {
 			t.Log(tc.IDStr())
 			t.Logf("\t: expected: %s", tc.svExpected)
@@ -202,7 +206,9 @@ func TestIncr(t *testing.T) {
 			incrPart: string(tc.incrPart),
 		}
 		err = si.incr()
+
 		testhelper.CheckExpErr(t, err, tc)
+
 		if !semver.Equals(&si.semverVals.SemVer, tc.svExpected) {
 			t.Log(tc.IDStr())
 			t.Logf("\t: expected: %s", tc.svExpected)

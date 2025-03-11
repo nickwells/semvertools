@@ -65,12 +65,14 @@ func main() {
 	ps := makeParamSet(prog)
 
 	ps.Parse()
+
 	sv := &prog.semverVals.SemVer
 
 	err := prog.incr()
 	if err != nil {
 		reportProblem(sv, err.Error())
 	}
+
 	err = prog.setIDs()
 	if err != nil {
 		reportProblem(sv, err.Error())
@@ -88,6 +90,8 @@ func reportProblem(sv *semver.SV, msg string) {
 
 // incr increments the appropriate part of the SemVer according to the
 // passed choice parameter
+//
+//nolint:cyclop
 func (prog *Prog) incr() error {
 	if prog.release {
 		return nil
@@ -107,16 +111,19 @@ func (prog *Prog) incr() error {
 			return errors.New("Cannot increment the pre-release ID" +
 				" as the semver does not have a PRID")
 		}
+
 		return incrLastPartOfPRID(sv)
 	case incrLeast:
 		if sv.HasPreRelIDs() {
 			return incrLastPartOfPRID(sv)
 		}
+
 		sv.IncrPatch()
 	case incrNone:
 	default:
 		return fmt.Errorf("Unknown increment choice: %q", prog.incrPart)
 	}
+
 	return nil
 }
 
@@ -131,6 +138,7 @@ func incrLastPartOfPRID(sv *semver.SV) error {
 	if err != nil {
 		return err
 	}
+
 	prIDs[lastIdx] = newVal
 
 	return sv.SetPreRelIDs(prIDs)
@@ -143,6 +151,14 @@ func incrLastPartOfPRID(sv *semver.SV) error {
 // will be incremented. For instance '123' will be changed to '124' but
 // 'RC012' will be changed to 'RC013'.
 func incrNumInStr(s string) (string, error) {
+	const (
+		wholeMatch = iota
+		prefixIdx
+		numIdx
+		suffixIdx
+		expectedLen
+	)
+
 	findNumPartRE := regexp.MustCompile("([^0-9]*)([0-9]+)(.*)")
 	parts := findNumPartRE.FindStringSubmatch(s)
 
@@ -150,20 +166,20 @@ func incrNumInStr(s string) (string, error) {
 		return s, fmt.Errorf("The string (%q) has no numerical part", s)
 	}
 
-	if parts[0] != s {
+	if parts[wholeMatch] != s {
 		return s,
 			fmt.Errorf("Only a part of the pre-release ID (%q) is matched: %q",
-				s, parts[0])
+				s, parts[wholeMatch])
 	}
 
-	if len(parts) != 4 {
+	if len(parts) != expectedLen {
 		return s, errors.New("The pre-release ID ('" +
 			s +
 			"') should be split into a (possibly empty) prefix," +
 			" one or more digits and a (possibly empty) suffix")
 	}
 
-	prefix, numStr, suffix := parts[1], parts[2], parts[3]
+	prefix, numStr, suffix := parts[prefixIdx], parts[numIdx], parts[suffixIdx]
 
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
@@ -172,6 +188,7 @@ func incrNumInStr(s string) (string, error) {
 				numStr +
 				"' into a number")
 	}
+
 	num++
 
 	if parts[1] == "" && parts[3] == "" {
@@ -222,6 +239,7 @@ func (prog *Prog) setIDs() error {
 		if err != nil {
 			return errors.New("bad Build IDs: " + err.Error())
 		}
+
 		err = sv.SetBuildIDs(bIDs)
 		if err != nil {
 			return errors.New("Cannot set Build IDs: " + err.Error())
@@ -242,18 +260,19 @@ func (prog *Prog) setIDs() error {
 		if err != nil {
 			return errors.New("bad Pre-Release IDs: " + err.Error())
 		}
+
 		return sv.SetPreRelIDs(prIDs)
 	}
+
 	return nil
 }
 
 // addParams will add parameters to the passed PSet
 func addParams(prog *Prog) param.PSetOptFunc {
 	return func(ps *param.PSet) error {
-		var (
-			countSetIDParams = prog.setIDParamCounter.MakeActionFunc()
-			countIncrParams  = prog.incrParamCounter.MakeActionFunc()
-		)
+		countSetIDParams := prog.setIDParamCounter.MakeActionFunc()
+		countIncrParams := prog.incrParamCounter.MakeActionFunc()
+
 		ps.Add("part",
 			psetter.Enum[string]{
 				Value: &prog.incrPart,
@@ -444,6 +463,7 @@ func checkCounter(name string, counter *paction.Counter) param.FinalCheckFunc {
 			return fmt.Errorf("%s has been given more than once: %s",
 				name, counter.SetBy())
 		}
+
 		return nil
 	}
 }

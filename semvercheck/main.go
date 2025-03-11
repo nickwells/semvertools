@@ -42,6 +42,7 @@ func main() {
 	if prog.checkSeq {
 		prog.seqCheck(svList)
 	}
+
 	os.Exit(prog.exitStatus)
 }
 
@@ -54,6 +55,7 @@ func (prog *Prog) seqCheck(svl []*semver.SV) {
 		if prevSV != nil {
 			prog.chkSequence(prevSV, sv, i)
 		}
+
 		prevSV = sv
 	}
 }
@@ -79,16 +81,19 @@ func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
 			prog.exitStatus = 1
 		}
 	}()
+
 	if p1 > p2 {
 		return fmt.Errorf("the "+semver.Names+" are out of order:"+
 			" the %s version: %d > %d ", partName, p1, p2)
 	}
+
 	if p1 < p2 {
 		if p2 != p1+1 {
 			return fmt.Errorf("the "+semver.Names+" have gaps:"+
 				" the %s version has grown by %d (should be 1)",
 				partName, p2-p1)
 		}
+
 		for _, p := range p2subs {
 			if p != 0 {
 				return fmt.Errorf(
@@ -98,6 +103,7 @@ func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -105,6 +111,7 @@ func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
 func (prog *Prog) reportSeqErr(sv1, sv2 *semver.SV, idx2 int, msg string) {
 	fmt.Printf("Bad ID list at: [%d] %s, [%d] %s:\n", idx2-1, sv1, idx2, sv2)
 	fmt.Printf("    %s\n", msg)
+
 	prog.exitStatus = 1
 }
 
@@ -120,10 +127,12 @@ func (prog *Prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
 		p1, p2 := sv1Parts[i], sv2Parts[i]
 		if p1 != p2 {
 			remainder := sv2Parts[i+1:]
+
 			err := prog.chkSVPart(name, p1, p2, remainder)
 			if err != nil {
 				prog.reportSeqErr(sv1, sv2, idx2, err.Error())
 			}
+
 			return
 		}
 	}
@@ -133,6 +142,7 @@ func (prog *Prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
 			"the "+semver.Names+" are out of order:"+
 				" the former is greater than the latter"+
 				" - check the pre-release IDs")
+
 		return
 	}
 
@@ -157,14 +167,17 @@ func (prog *Prog) makeSV(s string) (sv *semver.SV, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = semver.CheckRules(sv.PreRelIDs(), prog.semverChecks.PreRelIDChecks)
 	if err != nil {
 		return nil, fmt.Errorf("Bad pre-release IDs: %s", err)
 	}
+
 	err = semver.CheckRules(sv.BuildIDs(), prog.semverChecks.BuildIDChecks)
 	if err != nil {
 		return nil, fmt.Errorf("Bad build IDs: %s", err)
 	}
+
 	return sv, nil
 }
 
@@ -181,6 +194,7 @@ func (prog *Prog) getSVsFromStdin() []*semver.SV {
 		loc.SetContent(scanner.Text())
 		svl = append(svl, prog.mkRptPrt(loc))
 	}
+
 	return svl
 }
 
@@ -195,6 +209,7 @@ func (prog *Prog) getSVsFromStrings(args []string) []*semver.SV {
 		loc.SetContent(s)
 		svl = append(svl, prog.mkRptPrt(loc))
 	}
+
 	return svl
 }
 
@@ -212,6 +227,7 @@ func (prog *Prog) mkRptPrt(loc *location.L) *semver.SV {
 	if err != nil {
 		fmt.Println(loc)
 		fmt.Println("   ", err)
+
 		return nil
 	}
 

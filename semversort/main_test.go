@@ -109,6 +109,7 @@ func TestMakeSVList(t *testing.T) {
 	}
 
 	var errBuff bytes.Buffer
+
 	for _, tc := range testCases {
 		prog := NewProg()
 		prog.reportBadSV = tc.reportBadSV
@@ -117,20 +118,24 @@ func TestMakeSVList(t *testing.T) {
 
 		errBuff.Reset()
 		prog.errOut = &errBuff
+
 		svList := prog.getSVListFromStrings(tc.input)
 		if reportGetDiffs(t, svList, tc, "getSVListFromStrings") {
 			continue
 		}
+
 		if reportBadErr(t, errBuff.String(), tc, "getSVListFromStrings") {
 			continue
 		}
 
 		errBuff.Reset()
+
 		svList, _ = prog.getSVListFromReader(
 			strings.NewReader(strings.Join(tc.input, "\n")))
 		if reportGetDiffs(t, svList, tc, "getSVListFromReader") {
 			continue
 		}
+
 		if reportBadErr(t, errBuff.String(), tc, "getSVListFromReader") {
 			continue
 		}
@@ -145,16 +150,21 @@ func TestMakeSVList(t *testing.T) {
 // otherwise.
 func reportBadErr(t *testing.T, errStr string, tc TC, name string) bool {
 	t.Helper()
+
 	if errStr != tc.expErrStr {
 		t.Log(tc.IDStr())
+
 		if tc.reportBadSV {
 			t.Log("\t: bad semvers should be reported as an error")
 		}
+
 		t.Logf("\t: expected: '%s'", tc.expErrStr)
 		t.Logf("\t:      got: '%s'", errStr)
 		t.Errorf("\t: unexpected error report when calling %s\n", name)
+
 		return true
 	}
+
 	return false
 }
 
@@ -162,16 +172,21 @@ func reportBadErr(t *testing.T, errStr string, tc TC, name string) bool {
 // lists of values. It reports the settings of the relevant flags
 func reportSortDiffs(t *testing.T, got semver.SVList, tc TC) bool {
 	t.Helper()
+
 	if differs, badIdx := svListsDiffer(got, tc.expSortedSVList); differs {
 		t.Log(tc.IDStr())
+
 		if tc.reverseSort {
 			t.Log("\t: sorting in reverse order")
 		}
+
 		logSVList(t, "expected:", badIdx, tc.expSortedSVList)
 		logSVList(t, "got:", badIdx, got)
 		t.Errorf("\t: unexpected sort results\n")
+
 		return true
 	}
+
 	return false
 }
 
@@ -179,16 +194,21 @@ func reportSortDiffs(t *testing.T, got semver.SVList, tc TC) bool {
 // lists of values. It reports the settings of the relevant flags
 func reportGetDiffs(t *testing.T, got semver.SVList, tc TC, name string) bool {
 	t.Helper()
+
 	if differs, badIdx := svListsDiffer(got, tc.expSVList); differs {
 		t.Log(tc.IDStr())
+
 		if tc.ignoreSemVerWithPRIDs {
 			t.Log("\t: ignore semvers having pre-release IDs")
 		}
+
 		logSVList(t, "expected:", badIdx, tc.expSVList)
 		logSVList(t, "got:", badIdx, got)
 		t.Errorf("\t: unexpected result from %s\n", name)
+
 		return true
 	}
+
 	return false
 }
 
@@ -200,11 +220,13 @@ func svListsDiffer(l1, l2 semver.SVList) (bool, int) {
 		if i >= len(l2) {
 			return true, i
 		}
+
 		sv2 := l2[i]
 		if !semver.Equals(sv1, sv2) {
 			return true, i
 		}
 	}
+
 	if len(l1) < len(l2) {
 		return true, len(l1)
 	}
@@ -217,12 +239,16 @@ func logSVList(t *testing.T, prefix string, badIdx int, l semver.SVList) {
 	t.Helper()
 
 	t.Log("\t:", prefix)
+
 	intro := "   "
+
 	for i, sv := range l {
 		if i == badIdx {
 			intro = ">>>"
 		}
+
 		t.Log("\t\t", intro, sv.String())
+
 		intro = "   "
 	}
 }

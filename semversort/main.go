@@ -49,6 +49,7 @@ func main() {
 	prog.sortList(svList)
 
 	var prevSV semver.SV
+
 	var rolIdx int
 
 	for _, sv := range svList {
@@ -89,11 +90,14 @@ func (prog *Prog) makeSV(s string, errOut io.Writer) *semver.SV {
 		if prog.reportBadSV {
 			fmt.Fprintln(errOut, s, ":", err)
 		}
+
 		return nil
 	}
+
 	if sv.HasPreRelIDs() && prog.ignoreSemVerWithPRIDs {
 		return nil
 	}
+
 	return sv
 }
 
@@ -114,14 +118,17 @@ func (prog *Prog) getSVListFromReader(r io.Reader,
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		parts := re.FindStringSubmatch(scanner.Text())
+
 		sv := prog.makeSV(parts[1], prog.errOut)
 		if sv == nil {
 			continue
 		}
+
 		svROLMap[parts[1]] = append(svROLMap[parts[1]], parts[2])
 
 		svList = append(svList, sv)
 	}
+
 	return svList, svROLMap
 }
 
@@ -138,5 +145,6 @@ func (prog *Prog) getSVListFromStrings(args []string) semver.SVList {
 
 		svList = append(svList, sv)
 	}
+
 	return svList
 }
