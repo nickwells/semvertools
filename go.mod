@@ -1,8 +1,6 @@
 module github.com/nickwells/semvertools
 
-go 1.21
-
-toolchain go1.21.0
+go 1.24
 
 require (
 	github.com/nickwells/filecheck.mod v1.2.0
