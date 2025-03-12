@@ -52,10 +52,10 @@ func main() {
 
 	var rolIdx int
 
-	for _, sv := range svList {
+	for i, sv := range svList {
 		fmt.Print(sv)
 
-		if semver.Equals(&prevSV, sv) {
+		if semver.Equals(&prevSV, sv) && i > 0 {
 			rolIdx++
 		} else {
 			rolIdx = 0
@@ -64,6 +64,10 @@ func main() {
 		prevSV = *sv
 
 		if rol, ok := svRestOfLineMap[sv.String()]; ok && !prog.hideRestOfLine {
+			if rolIdx >= len(rol) {
+				continue
+			}
+
 			fmt.Print(rol[rolIdx])
 		}
 
