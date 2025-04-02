@@ -13,7 +13,9 @@ import (
 )
 
 // Created: Wed Jan 16 22:49:24 2019
-type Prog struct {
+
+// prog holds the parameter values and intermediate results
+type prog struct {
 	checkSeq     bool
 	printSV      bool
 	semverChecks semverparams.SemverChecks
@@ -21,13 +23,13 @@ type Prog struct {
 	exitStatus int
 }
 
-// NewProg returns a new Prog instance with any default values set
-func NewProg() *Prog {
-	return &Prog{}
+// newProg returns a new Prog instance with any default values set
+func newProg() *prog {
+	return &prog{}
 }
 
 func main() {
-	prog := NewProg()
+	prog := newProg()
 	ps := makeParamSet(prog)
 
 	ps.Parse()
@@ -49,7 +51,7 @@ func main() {
 // seqCheck will compare each entry in the semver list against its
 // predecessor and if it is not one greater than it then it will report an
 // error.
-func (prog *Prog) seqCheck(svl []*semver.SV) {
+func (prog *prog) seqCheck(svl []*semver.SV) {
 	var prevSV *semver.SV
 	for i, sv := range svl {
 		if prevSV != nil {
@@ -74,7 +76,7 @@ func (prog *Prog) seqCheck(svl []*semver.SV) {
 //	and all of the p2 subparts are 0
 //
 // If any checks fail it returns a non-nil error and sets the exitStatus to 1.
-func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
+func (prog *prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
 ) (err error) {
 	defer func() {
 		if err != nil {
@@ -108,7 +110,7 @@ func (prog *Prog) chkSVPart(partName string, p1, p2 int, p2subs []int,
 }
 
 // reportSeqErr reports an error in the list of IDs
-func (prog *Prog) reportSeqErr(sv1, sv2 *semver.SV, idx2 int, msg string) {
+func (prog *prog) reportSeqErr(sv1, sv2 *semver.SV, idx2 int, msg string) {
 	fmt.Printf("Bad ID list at: [%d] %s, [%d] %s:\n", idx2-1, sv1, idx2, sv2)
 	fmt.Printf("    %s\n", msg)
 
@@ -118,7 +120,7 @@ func (prog *Prog) reportSeqErr(sv1, sv2 *semver.SV, idx2 int, msg string) {
 // chkSequence checks that the two semvers are in order and that sv2 is one
 // ahead of sv1, that either the patch, minor or major numbers are greater by
 // precisely one
-func (prog *Prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
+func (prog *prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
 	sv1Parts := []int{sv1.Major(), sv1.Minor(), sv1.Patch()}
 	sv2Parts := []int{sv2.Major(), sv2.Minor(), sv2.Patch()}
 	partNames := []string{"major", "minor", "patch"}
@@ -156,7 +158,7 @@ func (prog *Prog) chkSequence(sv1, sv2 *semver.SV, idx2 int) {
 // cannot be converted then a nil pointer and an error will be returned and
 // the exitStatus will be set to 1. Otherwise a pointer to a well-formed
 // semver and a nil error will be returned.
-func (prog *Prog) makeSV(s string) (sv *semver.SV, err error) {
+func (prog *prog) makeSV(s string) (sv *semver.SV, err error) {
 	defer func() {
 		if err != nil {
 			prog.exitStatus = 1
@@ -170,12 +172,12 @@ func (prog *Prog) makeSV(s string) (sv *semver.SV, err error) {
 
 	err = semver.CheckRules(sv.PreRelIDs(), prog.semverChecks.PreRelIDChecks)
 	if err != nil {
-		return nil, fmt.Errorf("Bad pre-release IDs: %s", err)
+		return nil, fmt.Errorf("bad pre-release IDs: %s", err)
 	}
 
 	err = semver.CheckRules(sv.BuildIDs(), prog.semverChecks.BuildIDChecks)
 	if err != nil {
-		return nil, fmt.Errorf("Bad build IDs: %s", err)
+		return nil, fmt.Errorf("bad build IDs: %s", err)
 	}
 
 	return sv, nil
@@ -183,7 +185,7 @@ func (prog *Prog) makeSV(s string) (sv *semver.SV, err error) {
 
 // getSVsFromStdin will read semver strings from standard input
 // and check them. It returns a list of all the valid semvers.
-func (prog *Prog) getSVsFromStdin() []*semver.SV {
+func (prog *prog) getSVsFromStdin() []*semver.SV {
 	svl := []*semver.SV{}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -200,7 +202,7 @@ func (prog *Prog) getSVsFromStdin() []*semver.SV {
 
 // getSVsFromStrings will read semver strings from the passed list of
 // strings and check them. It returns a list of all the valid semvers
-func (prog *Prog) getSVsFromStrings(args []string) []*semver.SV {
+func (prog *prog) getSVsFromStrings(args []string) []*semver.SV {
 	svl := make([]*semver.SV, 0, len(args))
 
 	loc := location.New("argument")
@@ -216,11 +218,11 @@ func (prog *Prog) getSVsFromStrings(args []string) []*semver.SV {
 // mkRptPrt creates a semver from the passed string, reports any
 // errors and adds the created semver to the list of semvers. It will also,
 // optionally, print the semver.
-func (prog *Prog) mkRptPrt(loc *location.L) *semver.SV {
+func (prog *prog) mkRptPrt(loc *location.L) *semver.SV {
 	s, hasContent := loc.Content()
 	if !hasContent {
 		panic(fmt.Errorf(
-			"Program error: the location should have content: %s", loc))
+			"program error: the location should have content: %s", loc))
 	}
 
 	sv, err := prog.makeSV(s)
@@ -239,7 +241,7 @@ func (prog *Prog) mkRptPrt(loc *location.L) *semver.SV {
 }
 
 // addParams adds the program-specific parameters
-func (prog *Prog) addParams() param.PSetOptFunc {
+func (prog *prog) addParams() param.PSetOptFunc {
 	return func(ps *param.PSet) error {
 		ps.Add("print", psetter.Bool{Value: &prog.printSV},
 			"print the "+semver.Names+

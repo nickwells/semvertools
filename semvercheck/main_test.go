@@ -87,10 +87,10 @@ func TestMakeSlice(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		prog := &Prog{}
-		fName := filepath.Join(testDataDir, "semvers", tc.ID.Name+".txt")
+		prog := &prog{}
+		fName := filepath.Join(testDataDir, "semvers", tc.Name+".txt")
 
-		f, err := os.Open(fName)
+		f, err := os.Open(fName) //nolint:gosec
 		if err != nil {
 			t.Fatal("Unexpected error opening", fName, ":", err)
 		}
@@ -114,7 +114,7 @@ func TestMakeSlice(t *testing.T) {
 			continue
 		}
 
-		gfc.Check(t, tc.IDStr()+" - read SVs", tc.ID.Name+".SV.checks",
+		gfc.Check(t, tc.IDStr()+" - read SVs", tc.Name+".SV.checks",
 			stdout)
 
 		fio, err = testhelper.NewStdioFromString("")
@@ -131,7 +131,7 @@ func TestMakeSlice(t *testing.T) {
 			continue
 		}
 
-		gfc.Check(t, tc.IDStr()+" - check list", tc.ID.Name+".SVList.checks",
+		gfc.Check(t, tc.IDStr()+" - check list", tc.Name+".SVList.checks",
 			stdout)
 
 		testhelper.DiffInt(t,
