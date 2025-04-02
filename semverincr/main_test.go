@@ -134,7 +134,7 @@ func TestSetIDs(t *testing.T) {
 			t.Fatal("Cannot create the semver to set the IDs on")
 		}
 
-		si := Prog{
+		si := prog{
 			semverVals: semverparams.SemverVals{
 				SemVer:    *sv,
 				PreRelIDs: tc.prIDs,
@@ -199,7 +199,7 @@ func TestIncr(t *testing.T) {
 			t.Fatal("Cannot create the semver to set the IDs on")
 		}
 
-		si := Prog{
+		si := prog{
 			semverVals: semverparams.SemverVals{
 				SemVer: *sv,
 			},

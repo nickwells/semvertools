@@ -34,7 +34,8 @@ const (
 	paramNameDfltPRID         = "default-pre-rel-IDs"
 )
 
-type Prog struct {
+// prog holds the parameter values and intermediate results
+type prog struct {
 	dfltFirstPreRelIDs []string
 	releaseCandidate   bool
 	release            bool
@@ -49,9 +50,9 @@ type Prog struct {
 	semverChecks semverparams.SemverChecks
 }
 
-// NewProg creates an initialised Prog value
-func NewProg() *Prog {
-	return &Prog{
+// newProg creates an initialised Prog value
+func newProg() *prog {
+	return &prog{
 		dfltFirstPreRelIDs: []string{"rc", "1"},
 
 		clearIDs:   clearNone,
@@ -61,7 +62,7 @@ func NewProg() *Prog {
 }
 
 func main() {
-	prog := NewProg()
+	prog := newProg()
 	ps := makeParamSet(prog)
 
 	ps.Parse()
@@ -92,7 +93,7 @@ func reportProblem(sv *semver.SV, msg string) {
 // passed choice parameter
 //
 //nolint:cyclop
-func (prog *Prog) incr() error {
+func (prog *prog) incr() error {
 	if prog.release {
 		return nil
 	}
@@ -108,7 +109,7 @@ func (prog *Prog) incr() error {
 		sv.IncrPatch()
 	case incrPRID:
 		if !sv.HasPreRelIDs() {
-			return errors.New("Cannot increment the pre-release ID" +
+			return errors.New("cannot increment the pre-release ID" +
 				" as the semver does not have a PRID")
 		}
 
@@ -121,7 +122,7 @@ func (prog *Prog) incr() error {
 		sv.IncrPatch()
 	case incrNone:
 	default:
-		return fmt.Errorf("Unknown increment choice: %q", prog.incrPart)
+		return fmt.Errorf("unknown increment choice: %q", prog.incrPart)
 	}
 
 	return nil
@@ -163,17 +164,17 @@ func incrNumInStr(s string) (string, error) {
 	parts := findNumPartRE.FindStringSubmatch(s)
 
 	if parts == nil {
-		return s, fmt.Errorf("The string (%q) has no numerical part", s)
+		return s, fmt.Errorf("the string (%q) has no numerical part", s)
 	}
 
 	if parts[wholeMatch] != s {
 		return s,
-			fmt.Errorf("Only a part of the pre-release ID (%q) is matched: %q",
+			fmt.Errorf("only a part of the pre-release ID (%q) is matched: %q",
 				s, parts[wholeMatch])
 	}
 
 	if len(parts) != expectedLen {
-		return s, errors.New("The pre-release ID ('" +
+		return s, errors.New("the pre-release ID ('" +
 			s +
 			"') should be split into a (possibly empty) prefix," +
 			" one or more digits and a (possibly empty) suffix")
@@ -184,7 +185,7 @@ func incrNumInStr(s string) (string, error) {
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
 		return s, errors.New(
-			"Cannot convert the numeric part of the pre-release ID '" +
+			"cannot convert the numeric part of the pre-release ID '" +
 				numStr +
 				"' into a number")
 	}
@@ -203,7 +204,7 @@ func incrNumInStr(s string) (string, error) {
 
 // clearSemverIDs clears the pre-release or build IDs according to the
 // setting of the clearIDs parameter.
-func (prog *Prog) clearSemverIDs() error {
+func (prog *prog) clearSemverIDs() error {
 	sv := &prog.semverVals.SemVer
 
 	switch prog.clearIDs {
@@ -216,7 +217,7 @@ func (prog *Prog) clearSemverIDs() error {
 		sv.ClearBuildIDs()
 	case clearNone:
 	default:
-		return fmt.Errorf("Unknown choice of IDs to clear: %q", prog.clearIDs)
+		return fmt.Errorf("unknown choice of IDs to clear: %q", prog.clearIDs)
 	}
 
 	return nil
@@ -226,7 +227,7 @@ func (prog *Prog) clearSemverIDs() error {
 // the clearIDs parameter and then sets any new values. Note that both
 // clearing and setting either of the groups of IDs is possible but the
 // setting will take precedence and any clearing is redundant
-func (prog *Prog) setIDs() error {
+func (prog *prog) setIDs() error {
 	err := prog.clearSemverIDs()
 	if err != nil {
 		return err
@@ -242,7 +243,7 @@ func (prog *Prog) setIDs() error {
 
 		err = sv.SetBuildIDs(bIDs)
 		if err != nil {
-			return errors.New("Cannot set Build IDs: " + err.Error())
+			return errors.New("cannot set Build IDs: " + err.Error())
 		}
 	}
 
@@ -268,7 +269,7 @@ func (prog *Prog) setIDs() error {
 }
 
 // addParams will add parameters to the passed PSet
-func addParams(prog *Prog) param.PSetOptFunc {
+func addParams(prog *prog) param.PSetOptFunc {
 	return func(ps *param.PSet) error {
 		countSetIDParams := prog.setIDParamCounter.MakeActionFunc()
 		countIncrParams := prog.incrParamCounter.MakeActionFunc()
@@ -420,7 +421,7 @@ func addParams(prog *Prog) param.PSetOptFunc {
 // cannot have both release and release candidate set at the same time.
 //
 // - you cannot have pre-release IDs set if either of these have been set
-func checkReleaseVals(prog *Prog) param.FinalCheckFunc {
+func checkReleaseVals(prog *prog) param.FinalCheckFunc {
 	return func() error {
 		if prog.release && prog.releaseCandidate {
 			return fmt.Errorf(
