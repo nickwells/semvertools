@@ -112,7 +112,7 @@ func TestMakeSVList(t *testing.T) {
 	var errBuff bytes.Buffer
 
 	for _, tc := range testCases {
-		prog := NewProg()
+		prog := newProg()
 		prog.reportBadSV = tc.reportBadSV
 		prog.ignoreSemVerWithPRIDs = tc.ignoreSemVerWithPRIDs
 		prog.reverseSort = tc.reverseSort
