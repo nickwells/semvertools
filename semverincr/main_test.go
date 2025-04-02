@@ -45,7 +45,7 @@ func TestIncrPRID(t *testing.T) {
 			prid:         "RC-RC",
 			pridExpected: "RC-RC",
 			ExpErr: testhelper.MkExpErr(
-				`The string ("RC-RC") has no numerical part`),
+				`the string ("RC-RC") has no numerical part`),
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestSetIDs(t *testing.T) {
 			idPart:     "bad",
 			svExpected: semver.NewSVOrPanic(1, 2, 3, prIDsInit, bIDsInit),
 			ExpErr: testhelper.MkExpErr(
-				`Unknown choice of IDs to clear: "bad"`),
+				`unknown choice of IDs to clear: "bad"`),
 		},
 	}
 
@@ -189,7 +189,7 @@ func TestIncr(t *testing.T) {
 			ID:         testhelper.MkID("bad"),
 			incrPart:   "bad",
 			svExpected: semver.NewSVOrPanic(1, 2, 3, prIDs, bIDs),
-			ExpErr:     testhelper.MkExpErr(`Unknown increment choice: "bad"`),
+			ExpErr:     testhelper.MkExpErr(`unknown increment choice: "bad"`),
 		},
 	}
 
