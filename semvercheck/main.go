@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/nickwells/location.mod/location"
-	"github.com/nickwells/param.mod/v6/param"
-	"github.com/nickwells/param.mod/v6/psetter"
+	"github.com/nickwells/param.mod/v7/param"
+	"github.com/nickwells/param.mod/v7/psetter"
 	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/semverparams.mod/v6/semverparams"
 )
@@ -35,7 +35,7 @@ func main() {
 	ps.Parse()
 
 	var svList []*semver.SV
-	if cmdLineSVs := ps.Remainder(); len(cmdLineSVs) > 0 {
+	if cmdLineSVs := ps.TrailingParams(); len(cmdLineSVs) > 0 {
 		svList = prog.getSVsFromStrings(cmdLineSVs)
 	} else {
 		svList = prog.getSVsFromStdin()
@@ -255,11 +255,6 @@ func (prog *prog) addParams() param.PSetOptFunc {
 				" no gaps in the sequence",
 			param.AltNames("check-order", "check-list"),
 		)
-
-		err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing params
-		if err != nil {
-			return err
-		}
 
 		return nil
 	}

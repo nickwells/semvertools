@@ -19,7 +19,7 @@ func main() {
 
 	var svRestOfLineMap map[string][]string
 
-	if cmdLineSVs := ps.Remainder(); len(cmdLineSVs) > 0 {
+	if cmdLineSVs := ps.TrailingParams(); len(cmdLineSVs) > 0 {
 		svList = prog.getSVListFromStrings(cmdLineSVs)
 	} else {
 		svList, svRestOfLineMap = prog.getSVListFromReader(os.Stdin)

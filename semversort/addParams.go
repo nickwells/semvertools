@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/nickwells/param.mod/v6/param"
-	"github.com/nickwells/param.mod/v6/psetter"
+	"github.com/nickwells/param.mod/v7/param"
+	"github.com/nickwells/param.mod/v7/psetter"
 )
 
 const (
@@ -53,11 +53,6 @@ func addParams(prog *prog) param.PSetOptFunc {
 				" be removed before the line being read is converted"+
 				" into a semantic version number.",
 			param.SeeAlso(paramNameHidePrefix))
-
-		err := ps.SetRemHandler(param.NullRemHandler{}) // allow trailing params
-		if err != nil {
-			return err
-		}
 
 		return nil
 	}

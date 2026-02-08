@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/nickwells/param.mod/v6/param"
-	"github.com/nickwells/param.mod/v6/paramset"
+	"github.com/nickwells/param.mod/v7/param"
+	"github.com/nickwells/param.mod/v7/paramset"
 	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/semverparams.mod/v6/semverparams"
 	"github.com/nickwells/versionparams.mod/versionparams"
@@ -10,7 +10,7 @@ import (
 
 // makeParamSet generates the param set ready for parsing
 func makeParamSet(prog *prog) *param.PSet {
-	return paramset.NewOrPanic(
+	return paramset.New(
 		versionparams.AddParams,
 
 		prog.addParams(),
@@ -20,10 +20,11 @@ func makeParamSet(prog *prog) *param.PSet {
 		SetGlobalConfigFile,
 		SetConfigFile,
 
+		param.SetTrailingParamsName("semver"),
 		param.SetProgramDescription(
 			"Check the supplied semver strings."+
 				" This will read "+semver.Names+" from the standard input or"+
-				" passed as arguments following "+param.DfltTerminalParam+"."+
+				" passed as trailing arguments."+
 				" For each it will check that it is valid and also"+
 				" that it conforms to any additional constraints given."+
 				" If all the "+semver.Names+" are valid"+
