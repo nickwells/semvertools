@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/nickwells/param.mod/v7/param"
 	"github.com/nickwells/param.mod/v7/paramset"
+	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/versionparams.mod/versionparams"
 )
 
@@ -16,7 +17,7 @@ func makeParamSet(prog *prog) *param.PSet {
 		SetGlobalConfigFile,
 		SetConfigFile,
 
-		param.SetTrailingParamsName("semver"),
+		param.SetTrailingParamsName(semver.ShortName),
 		param.SetProgramDescription(
 			"Sort semver strings read in from the standard input"+
 				" or given on the command line"),

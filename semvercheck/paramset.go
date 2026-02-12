@@ -20,7 +20,7 @@ func makeParamSet(prog *prog) *param.PSet {
 		SetGlobalConfigFile,
 		SetConfigFile,
 
-		param.SetTrailingParamsName("semver"),
+		param.SetTrailingParamsName(semver.ShortName),
 		param.SetProgramDescription(
 			"Check the supplied semver strings."+
 				" This will read "+semver.Names+" from the standard input or"+
@@ -30,7 +30,7 @@ func makeParamSet(prog *prog) *param.PSet {
 				" If all the "+semver.Names+" are valid"+
 				" this will exit with zero exit status."+
 				" If an invalid "+semver.Name+" is seen it will print an error"+
-				" and the progran will terminate with"+
+				" and the program will terminate with"+
 				" exit status of 1.\n"+
 				" It is also possible to have the parsed "+semver.Names+
 				" printed out after being checked."),
