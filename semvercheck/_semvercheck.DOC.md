@@ -3,11 +3,11 @@
 # semvercheck
 
 Check the supplied semver strings\. This will read semantic version IDs from the
-standard input or passed as arguments following \-\-\. For each it will check
-that it is valid and also that it conforms to any additional constraints given\.
-If all the semantic version IDs are valid this will exit with zero exit status\.
-If an invalid semantic version ID is seen it will print an error and the progran
-will terminate with exit status of 1\.
+standard input or passed as trailing arguments\. For each it will check that it
+is valid and also that it conforms to any additional constraints given\. If all
+the semantic version IDs are valid this will exit with zero exit status\. If an
+invalid semantic version ID is seen it will print an error and the program will
+terminate with exit status of 1\.
  It is also possible to have the parsed semantic version IDs printed out after
 being checked\.
 
