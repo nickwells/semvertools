@@ -48,7 +48,7 @@ func (prog *prog) makeSV(s string, errOut io.Writer) *semver.SV {
 	sv, err := semver.ParseSV(s)
 	if err != nil {
 		if prog.reportBadSV {
-			fmt.Fprintln(errOut, s, ":", err)
+			fmt.Fprintln(errOut, s, ":", err) //nolint:gosec
 		}
 
 		return nil
