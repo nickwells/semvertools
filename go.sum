@@ -1,7 +1,7 @@
 github.com/nickwells/check.mod/v2 v2.1.29 h1:F0lysi+/OJKwgpEKq7mOwadk6ihrauRm9yyTHHMyw3M=
 github.com/nickwells/check.mod/v2 v2.1.29/go.mod h1:dmpEJk2imjH8cULMGqmQ2h7FAbT+wOTmK5OBpghnzyM=
-github.com/nickwells/checksetter.mod/v4 v4.0.35 h1:+jf11c5BjToSVQShe0oC1EzqEGUAJR7FyyDOMqb+G5Y=
-github.com/nickwells/checksetter.mod/v4 v4.0.35/go.mod h1:wx6mLqCR27H3b6KqlJ+xapyauEca6PbVvagT9GXG3bU=
+github.com/nickwells/checksetter.mod/v4 v4.0.36 h1:KXONn6S5ix3INmoPWolC1U0vrZ/YUmQSGin98Fhuj2E=
+github.com/nickwells/checksetter.mod/v4 v4.0.36/go.mod h1:o+//dK1ClhT/z9mEtPIHOL0SL01DyNX4JOsXd7hXQOc=
 github.com/nickwells/col.mod/v6 v6.1.1 h1:84LEl2KW69D2rQ5CDDcMRPPU6UntrKRwWzR7btCB35A=
 github.com/nickwells/col.mod/v6 v6.1.1/go.mod h1:jqQ767lHvv58+zJBAf7dN3bE5rY1JebogqFJHbT6yeg=
 github.com/nickwells/english.mod v1.2.10 h1:2juLjjfsB1PXW6bD9TELd5Tlwd5eMT6fiXjyl/lOXA8=
@@ -18,12 +18,12 @@ github.com/nickwells/mathutil.mod/v2 v2.5.11 h1:NZd6DcQlkorpUVV6W6dt3RJsQDSldT0D
 github.com/nickwells/mathutil.mod/v2 v2.5.11/go.mod h1:3sZumgf0qtVdA3yRHqx5pCotccjTnmQU6SX1MGOgnYU=
 github.com/nickwells/pager.mod v1.1.0 h1:aQz49pzbl4fhTm1CsbZ38tGJCI8AVn5H3jfIB1/B5d0=
 github.com/nickwells/pager.mod v1.1.0/go.mod h1:OGWcVtaTPzCTghzTGqaFMhXxY6eeEx7B5bD3QZY/TwU=
-github.com/nickwells/param.mod/v7 v7.2.3 h1:yo64CnvVIx3W2JOQAfzKXgg5A5DW0Ho8q+TGeG47CYE=
-github.com/nickwells/param.mod/v7 v7.2.3/go.mod h1:E66GIhdvT8Arqp9xcqyyhGTTr5V1wsG12kMzJ2Vhhm8=
+github.com/nickwells/param.mod/v7 v7.2.4 h1:3KQXgmavGSBHlTaIKsJj4JxGVTaN4ccyZWP3sfAgQ4s=
+github.com/nickwells/param.mod/v7 v7.2.4/go.mod h1:E66GIhdvT8Arqp9xcqyyhGTTr5V1wsG12kMzJ2Vhhm8=
 github.com/nickwells/semver.mod/v3 v3.2.3 h1:drazLm4RU4bk/W+HBa234Hl0vf4KKNIm/0Eyc2RlEM0=
 github.com/nickwells/semver.mod/v3 v3.2.3/go.mod h1:BmG6tXOlErtN+4gvCqjQpcPV8f0kSYnG6SSuqfqrfIw=
-github.com/nickwells/semverparams.mod/v6 v6.2.31 h1:/FKtvN/9t5klMaGf1opKs33GRVZW94l7BRaPiYSyFls=
-github.com/nickwells/semverparams.mod/v6 v6.2.31/go.mod h1:q8VjHbwMhYN+VQXaGD447358HrGyBGBP50vWY9ojaP4=
+github.com/nickwells/semverparams.mod/v6 v6.2.32 h1:DxDSbb7lkcNH860bnQWXjj2dXmjkAfCK7YieVIiGhag=
+github.com/nickwells/semverparams.mod/v6 v6.2.32/go.mod h1:2p3nL1Epy6Ymiosj1X50OJUSJY0RAATYoKmS1U9XPCc=
 github.com/nickwells/strdist.mod/v2 v2.1.2 h1:YCYd+xhYA6uaFfw6gNKPneEgAioJkz0UD9zOFQFtSKk=
 github.com/nickwells/strdist.mod/v2 v2.1.2/go.mod h1:f1xw0L6xS/aFem3akuFbsBTGmn90IiFlUZO8RXLuYbQ=
 github.com/nickwells/tempus.mod v1.2.11 h1:v+2zrjwwCbJcNpQCpNkNCnUg7yAJDkCxyAXFp9a47gU=
@@ -32,8 +32,8 @@ github.com/nickwells/testhelper.mod/v2 v2.6.1 h1:bz9i+YPyR+L1s0iM0/fiBmJ8mUAl6BP
 github.com/nickwells/testhelper.mod/v2 v2.6.1/go.mod h1:MKIJiDiPNgn4r7/46XG5aclWV0eu0mlSqzsPLadi2V8=
 github.com/nickwells/twrap.mod v1.5.14 h1:nnxmHEbDP8Zgk3PbvRftDrQegvpuuoo/fmWemyD4R4I=
 github.com/nickwells/twrap.mod v1.5.14/go.mod h1:76RJY0eoScPwNp28C28BTFqF9ZV7kdoJNx28+fNt+aI=
-github.com/nickwells/versionparams.mod v1.2.27 h1:x/xoMINajnCiCDf9hcJZBlC6ucmHZHucAXs+n5YWmMw=
-github.com/nickwells/versionparams.mod v1.2.27/go.mod h1:u4innEEcXFhig/I03GTWh3TnEyTn017NeXA1X94NkIg=
+github.com/nickwells/versionparams.mod v1.2.28 h1:9X6HveyxoqkW+7TU0hQ7ALAHz1gDEfwugBR4Ve122lQ=
+github.com/nickwells/versionparams.mod v1.2.28/go.mod h1:tKPKcIrlHTp5Rno18IeMJIDJkUvyscpRND1+iQTfDBQ=
 github.com/nickwells/xdg.mod v1.0.12 h1:eJSlyYXHNLBnj/Uyh52xyRTR+7PxCq9PWu4W9eIP/9o=
 github.com/nickwells/xdg.mod v1.0.12/go.mod h1:QNimXjvv0GmffSeFPbrgBJ15N+uCmRAFOTRyBZiDphU=
 golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a h1:+3jdDGGB8NGb1Zktc737jlt3/A5f6UlwSzmvqUuufxw=

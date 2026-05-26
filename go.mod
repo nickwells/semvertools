@@ -5,11 +5,11 @@ go 1.26.0
 require (
 	github.com/nickwells/filecheck.mod v1.2.13
 	github.com/nickwells/location.mod v1.2.37
-	github.com/nickwells/param.mod/v7 v7.2.3
+	github.com/nickwells/param.mod/v7 v7.2.4
 	github.com/nickwells/semver.mod/v3 v3.2.3
-	github.com/nickwells/semverparams.mod/v6 v6.2.31
+	github.com/nickwells/semverparams.mod/v6 v6.2.32
 	github.com/nickwells/testhelper.mod/v2 v2.6.1
-	github.com/nickwells/versionparams.mod v1.2.27
+	github.com/nickwells/versionparams.mod v1.2.28
 	github.com/nickwells/xdg.mod v1.0.12
 )
 
@@ -20,7 +20,7 @@ require (
 
 require (
 	github.com/nickwells/check.mod/v2 v2.1.29 // indirect
-	github.com/nickwells/checksetter.mod/v4 v4.0.35 // indirect
+	github.com/nickwells/checksetter.mod/v4 v4.0.36 // indirect
 	github.com/nickwells/english.mod v1.2.10 // indirect
 	github.com/nickwells/errutil.mod v1.2.24 // indirect
 	github.com/nickwells/fileparse.mod v1.1.39 // indirect
